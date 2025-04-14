@@ -1,0 +1,509 @@
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background-color: #000;
+    color: #fff;
+    min-height: 100vh;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Header styles */
+.main-header {
+    padding: 1rem 5%;
+    background-color: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(10px);
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.logo {
+    height: 60px;
+    width: auto;
+    transition: transform 0.3s ease;
+}
+
+.logo:hover {
+    transform: scale(1.05);
+}
+
+.nav-title {
+    color: #fff;
+    font-size: 1.4rem;
+    font-weight: 600;
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+    padding-top: 2px;
+    margin-left: 1rem;
+    display: inline-block;
+}
+
+.nav-buttons {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.back-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #00C46F;
+    text-decoration: none;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+    transform: translateX(-5px);
+}
+
+.back-icon {
+    font-size: 1.2rem;
+}
+
+.menu-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+}
+
+/* Main Container */
+.topics-container {
+    padding-top: 80px;
+    min-height: 100vh;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-left: 5%;
+    padding-right: 5%;
+}
+
+/* Course Header */
+.course-header {
+    background: linear-gradient(135deg, #00C46F, #00A85D);
+    padding: 2.5rem;
+    border-radius: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2.5rem;
+    box-shadow: 0 10px 30px rgba(0, 196, 111, 0.2);
+    transition: transform 0.3s ease;
+}
+
+.course-header:hover {
+    transform: translateY(-5px);
+}
+
+.course-header h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #000;
+}
+
+.cambridge-logo {
+    width: 100px;
+    height: auto;
+}
+
+.course-info {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.course-text h1 {
+    color: #000;
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.course-description {
+    color: rgba(0, 0, 0, 0.8);
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+/* Topics Section */
+.topics-section {
+    padding: 2rem 0;
+}
+
+.topics-section h2 {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    color: #fff;
+    text-transform: capitalize;
+    position: relative;
+    display: inline-block;
+}
+
+.topics-section h2::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 60px;
+    height: 3px;
+    background: #00C46F;
+    border-radius: 2px;
+}
+
+/* Scrollable Topics List */
+.topics-list {
+    height: calc(100vh - 300px);
+    overflow-y: auto;
+    padding-right: 1rem;
+}
+
+/* Custom Scrollbar */
+.topics-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.topics-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.topics-list::-webkit-scrollbar-thumb {
+    background: #fff;
+    border-radius: 4px;
+}
+
+/* Topic Cards */
+.topic-card {
+    background: linear-gradient(to right, rgba(20, 20, 20, 0.8), rgba(30, 30, 30, 0.8));
+    border-radius: 15px;
+    margin-bottom: 1.2rem;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.topic-card:hover {
+    background: linear-gradient(to right, rgba(30, 30, 30, 0.9), rgba(40, 40, 40, 0.9));
+    transform: translateX(10px) scale(1.02);
+    border-color: rgba(0, 196, 111, 0.3);
+    box-shadow: 0 5px 20px rgba(0, 196, 111, 0.1);
+}
+
+.topic-content {
+    padding: 1.5rem;
+}
+
+.topic-title {
+    color: #00C46F;
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.topic-subtitle {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+}
+
+/* Subtopics List Styles */
+.subtopics-list {
+    list-style: none;
+    margin: 0.8rem 0;
+    padding-left: 1rem;
+}
+
+.subtopics-list li {
+    color: #fff;
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+    position: relative;
+    padding-left: 1rem;
+}
+
+.subtopics-list li::before {
+    content: '•';
+    color: #00C46F;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 2000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal.show {
+    display: flex;
+    opacity: 1;
+}
+
+.modal-content {
+    background-color: #141414;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 600px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-body {
+    padding: 2rem;
+}
+
+.modal-footer {
+    padding: 1.5rem 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.progress-indicator {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: #00C46F;
+    width: 0;
+    transition: width 0.3s ease;
+}
+
+.modal.show .modal-content {
+    transform: translateY(0);
+}
+
+.close-btn {
+    font-size: 1.5rem;
+    color: #fff;
+    cursor: pointer;
+    transition: color 0.3s ease;
+    padding: 0.5rem;
+    line-height: 1;
+}
+
+.close-btn:hover {
+    color: #00C853;
+}
+
+.modal-title {
+    color: #00C853;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+}
+
+.modal-body {
+    color: #fff;
+    line-height: 1.6;
+}
+
+/* Get Started Button */
+.get-started-btn {
+    display: inline-block;
+    background-color: #00C46F;
+    color: #000;
+    padding: 0.8rem 1.5rem;
+    border-radius: 5px;
+    text-decoration: none;
+    margin-top: 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-align: center;
+    width: 100%;
+}
+
+.get-started-btn:hover {
+    background-color: #00A85D;
+    transform: translateY(-2px);
+}
+
+/* Topic Details */
+.topic-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.topic-arrow {
+    color: #00C46F;
+    font-size: 1.2rem;
+    transition: transform 0.3s ease;
+}
+
+.topic-card:hover .topic-arrow {
+    transform: translateX(5px);
+}
+
+/* Modal Sections */
+.modal-section {
+    margin-bottom: 2rem;
+}
+
+.modal-section h3 {
+    color: #00C46F;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.objectives-list {
+    list-style: none;
+}
+
+.objectives-list li {
+    margin-bottom: 0.8rem;
+    padding-left: 1.5rem;
+    position: relative;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.objectives-list li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: #00C46F;
+}
+
+/* Learning Points */
+.learning-points {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.point {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    transition: transform 0.3s ease;
+}
+
+.point:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.point-number {
+    background: #00C46F;
+    color: #000;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.point p {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.95rem;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 2rem;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    border-top-color: #00C46F;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.get-started-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(0, 196, 111, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .course-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+
+    .course-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .topics-list {
+        height: calc(100vh - 350px);
+    }
+
+    .modal-content {
+        width: 95%;
+        padding: 1.5rem;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.course-header,
+.topic-card {
+    animation: fadeIn 0.5s ease-out forwards;
+}

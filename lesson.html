@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson - IGCSE Business Studies</title>
+    <link rel="stylesheet" href="lesson.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* ... existing styles ... */
+        
+        .thinking-animation {
+            display: flex;
+            gap: 4px;
+            padding: 8px 0;
+        }
+        
+        .thinking-animation span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: #00C46F;
+            border-radius: 50%;
+            animation: thinking 1.4s infinite ease-in-out;
+        }
+        
+        .thinking-animation span:nth-child(1) {
+            animation-delay: 0s;
+        }
+        
+        .thinking-animation span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .thinking-animation span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes thinking {
+            0%, 80%, 100% {
+                transform: scale(0);
+            }
+            40% {
+                transform: scale(1);
+            }
+        }
+        
+        .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 20px;
+            overflow-y: auto;
+            height: 100vh;
+        }
+        
+        .search-bar {
+            padding: 10px 0;
+            margin-bottom: 5px;
+        }
+        
+        .chat-interface {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #1E1E1E;
+            border-radius: 10px;
+            overflow: hidden;
+            height: calc(100vh - 100px);
+            border: 1px solid #333;
+        }
+        
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            height: calc(100% - 60px);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .chat-message {
+            max-width: 80%;
+            margin: 8px 0;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
+        .user-message {
+            background: rgba(0, 196, 111, 0.1);
+            margin-left: auto;
+            border: 1px solid rgba(0, 196, 111, 0.2);
+        }
+        
+        .bot-message {
+            background: rgba(42, 42, 42, 0.8);
+            margin-right: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .message-timestamp {
+            display: none;
+        }
+        
+        .chat-input-area {
+            padding: 10px;
+            background: #2A2A2A;
+            border-top: 1px solid #333;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        
+        .message-input {
+            width: 100%;
+            height: 40px;
+            padding: 8px 40px 8px 8px;
+            background: #333;
+            border: 1px solid #444;
+            border-radius: 5px;
+            color: #fff;
+            font-family: 'Poppins', sans-serif;
+            resize: none;
+            transition: border-color 0.3s;
+        }
+        
+        .message-input:focus {
+            outline: none;
+            border-color: #00C46F;
+        }
+        
+        .send-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #00C46F;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 15px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .send-btn:hover {
+            background: #00B362;
+        }
+        
+        .send-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        
+        /* ... existing styles ... */
+        
+        /* Scrollbar styling */
+        .chat-container::-webkit-scrollbar,
+        .lesson-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .chat-container::-webkit-scrollbar-track,
+        .lesson-content::-webkit-scrollbar-track {
+            background: #1E1E1E;
+        }
+        
+        .chat-container::-webkit-scrollbar-thumb,
+        .lesson-content::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+        
+        .chat-container::-webkit-scrollbar-thumb:hover,
+        .lesson-content::-webkit-scrollbar-thumb:hover {
+            background: #444;
+        }
+        
+        .message-content {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.4;
+            font-size: 0.9rem;
+        }
+        
+        .message-content p {
+            margin: 4px 0;
+        }
+        
+        .message-content ul {
+            margin: 8px 0;
+            padding-left: 20px;
+            list-style-type: none;
+        }
+        
+        .message-content li {
+            margin: 4px 0;
+            padding-left: 8px;
+        }
+        
+        .message-content li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: #00C46F;
+            font-size: 1.2em;
+        }
+        
+        .message-content span[style*="color: #00C46F"] {
+            font-weight: 500;
+            padding: 0 2px;
+            border-radius: 2px;
+            background: rgba(0, 196, 111, 0.1);
+            transition: all 0.2s ease;
+        }
+        
+        .message-content span[style*="color: #00C46F"]:hover {
+            background: rgba(0, 196, 111, 0.2);
+        }
+        
+        .message-heading {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            margin: 8px 0;
+            color: #fff;
+            position: relative;
+            padding-left: 14px;
+            letter-spacing: 0.3px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .message-heading::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 3px;
+            background: linear-gradient(to bottom, #00C46F, #00A85D);
+            border-radius: 2px;
+            box-shadow: 0 2px 4px rgba(0, 196, 111, 0.3);
+        }
+        
+        .message-heading h1 {
+            font-size: 1.1rem;
+            color: #00C46F;
+            margin: 0;
+            padding: 4px 0;
+            text-shadow: 0 2px 4px rgba(0, 196, 111, 0.2);
+            letter-spacing: 0.4px;
+            position: relative;
+        }
+        
+        .message-heading h2 {
+            font-size: 1rem;
+            color: #00C46F;
+            margin: 0;
+            padding: 4px 0;
+            text-shadow: 0 2px 4px rgba(0, 196, 111, 0.2);
+            letter-spacing: 0.3px;
+            position: relative;
+        }
+        
+        .message-heading h3 {
+            font-size: 0.9rem;
+            color: #00C46F;
+            margin: 0;
+            padding: 4px 0;
+            text-shadow: 0 2px 4px rgba(0, 196, 111, 0.2);
+            letter-spacing: 0.2px;
+            position: relative;
+        }
+        
+        .message-paragraph {
+            margin: 6px 0;
+            font-size: 0.8rem;
+            color: #fff;
+            line-height: 1.4;
+            letter-spacing: 0.2px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+        
+        .bot-message .message-content {
+            background: transparent;
+            padding: 0;
+            border-radius: 0;
+        }
+        
+        .user-message .message-content {
+            background: transparent;
+            padding: 0;
+            border-radius: 0;
+        }
+        
+        .markdown-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 8px 0;
+            background: rgba(42, 42, 42, 0.8);
+            backdrop-filter: blur(8px);
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.85rem;
+        }
+        
+        .table-title {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            color: #00C46F;
+            margin: 8px 0 4px;
+            padding-left: 10px;
+            position: relative;
+            font-size: 0.9rem;
+        }
+        
+        .markdown-table th {
+            background: rgba(0, 196, 111, 0.1);
+            color: #00C46F;
+            font-weight: 600;
+            padding: 8px 10px;
+            text-align: left;
+            border-bottom: 1px solid rgba(0, 196, 111, 0.2);
+            font-size: 0.85rem;
+        }
+        
+        .markdown-table td {
+            padding: 6px 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.85rem;
+            color: #fff;
+        }
+        
+        .markdown-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .markdown-table tr:hover {
+            background: rgba(0, 196, 111, 0.05);
+        }
+        
+        .markdown-table .numeric-cell {
+            text-align: right;
+            font-family: 'Poppins', monospace;
+            font-weight: 500;
+        }
+        
+        .markdown-table .text-cell {
+            text-align: left;
+        }
+        
+        .markdown-table tbody tr:nth-child(even) {
+            background: rgba(255, 255, 255, 0.02);
+        }
+    </style>
+</head>
+<body>
+    <!-- Main Content -->
+    <main class="main-container">
+        <!-- Left Sidebar -->
+        <aside class="sidebar">
+            <!-- Navigation Tabs -->
+            <div class="nav-tabs">
+                <button class="tab-btn active">
+                    <span class="tab-icon">📚</span>
+                    <span class="tab-text">Lessons</span>
+                </button>
+                <a href="questions.html" class="tab-btn">
+                    <span class="tab-icon">❓</span>
+                    <span class="tab-text">Question</span>
+                </a>
+                <a href="paper.html" class="tab-btn">
+                    <span class="tab-icon">📝</span>
+                    <span class="tab-text">Past Paper</span>
+                </a>
+            </div>
+
+            <!-- Chapter Section -->
+            <div class="chapter-section">
+                <h3>Chapter:</h3>
+                <p class="chapter-name">Chapter name</p>
+            </div>
+
+            <!-- Topics List -->
+            <div class="topics-section">
+                <h3>Topics:</h3>
+                <div class="topics-list">
+                    <div class="topic-item">Topic 1</div>
+                    <div class="topic-item">Topic 1</div>
+                    <div class="topic-item">Topic 1</div>
+                    <div class="topic-item">Topic 1</div>
+                    <div class="topic-item">Topic 1</div>
+                    <div class="topic-item">Topic 1</div>
+                    <div class="topic-item">Topic 1</div>
+                    <div class="topic-item">Topic 1</div>
+                    <div class="topic-item">Topic 1</div>
+                    <div class="topic-item">Topic 1</div>
+                </div>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="nav-buttons">
+                <button class="nav-btn next">
+                    <span>Next Topic</span>
+                    <span>➜</span>
+                </button>
+                <button class="nav-btn prev">
+                    <span>↰</span>
+                    <span>Previous Topic</span>
+                </button>
+            </div>
+
+            <!-- Notes Section -->
+            <div class="notes-section">
+                <h3>Notes</h3>
+                <textarea placeholder="Quick notes..." class="quick-notes"></textarea>
+                <button class="expand-notes-btn">Expand Notes</button>
+            </div>
+        </aside>
+
+        <!-- Notes Popup -->
+        <div class="notes-popup" id="notesPopup">
+            <div class="notes-popup-content">
+                <div class="notes-popup-header">
+                    <h2>Your Notes</h2>
+                    <button class="close-popup">&times;</button>
+                </div>
+                <textarea placeholder="Write your detailed notes here..." class="detailed-notes"></textarea>
+                <button class="save-notes-btn">Save Notes</button>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <section class="content-area">
+            <!-- Search Bar -->
+            <div class="search-bar">
+                <h2 class="lesson-title">IGCSE BUSINESS</h2>
+            </div>
+            
+            <!-- Chat Interface -->
+            <div class="chat-interface">
+                <div id="chat-container" class="chat-container"></div>
+                <div class="chat-input-area">
+                    <textarea id="message-input" class="message-input" placeholder="Type your message here..."></textarea>
+                    <button id="send-button" class="send-btn">➤</button>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button class="action-btn">MORE DETAILS</button>
+                <button class="action-btn">CASE STUDY</button>
+                <button class="action-btn">ANSWER</button>
+                <button class="action-btn" id="videoBtn">VIDEO</button>
+            </div>
+
+            <!-- Video Popup -->
+            <div class="video-popup" id="videoPopup">
+                <div class="video-popup-content">
+                    <div class="video-popup-header">
+                        <h2>Video Lesson</h2>
+                        <button class="close-video-popup">&times;</button>
+                    </div>
+                    <div class="video-container">
+                        <iframe width="100%" height="315" src="https://www.youtube.com/embed/dQw4w9WgXcQ" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Notes popup functionality
+        const expandNotesBtn = document.querySelector('.expand-notes-btn');
+        const notesPopup = document.querySelector('.notes-popup');
+        const closePopupBtn = document.querySelector('.close-popup');
+        const saveNotesBtn = document.querySelector('.save-notes-btn');
+        const quickNotes = document.querySelector('.quick-notes');
+        const detailedNotes = document.querySelector('.detailed-notes');
+        const fileInput = document.getElementById('file-input');
+        const filePreview = document.querySelector('.file-preview');
+
+        // Video popup functionality
+        const videoBtn = document.getElementById('videoBtn');
+        const videoPopup = document.getElementById('videoPopup');
+        const closeVideoPopupBtn = document.querySelector('.close-video-popup');
+
+        // Open video popup
+        videoBtn.addEventListener('click', () => {
+            videoPopup.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        });
+
+        // Close video popup
+        closeVideoPopupBtn.addEventListener('click', () => {
+            videoPopup.classList.remove('active');
+            document.body.style.overflow = ''; // Restore scrolling
+        });
+
+        // Close video popup when clicking outside
+        videoPopup.addEventListener('click', (e) => {
+            if (e.target === videoPopup) {
+                videoPopup.classList.remove('active');
+                document.body.style.overflow = ''; // Restore scrolling
+            }
+        });
+
+        // File attachment functionality
+        fileInput.addEventListener('change', (e) => {
+            filePreview.innerHTML = '';
+            const files = e.target.files;
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                
+                const fileThumbnail = document.createElement('img');
+                fileThumbnail.className = 'file-thumbnail';
+                
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        fileThumbnail.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    fileThumbnail.src = 'file-icon.png'; // Default file icon
+                }
+                
+                const fileInfo = document.createElement('div');
+                fileInfo.className = 'file-info';
+                fileInfo.textContent = file.name;
+                
+                const removeFile = document.createElement('button');
+                removeFile.className = 'remove-file';
+                removeFile.textContent = '×';
+                removeFile.onclick = () => {
+                    fileItem.remove();
+                    if (filePreview.children.length === 0) {
+                        filePreview.style.display = 'none';
+                    }
+                };
+                
+                fileItem.appendChild(fileThumbnail);
+                fileItem.appendChild(fileInfo);
+                fileItem.appendChild(removeFile);
+                filePreview.appendChild(fileItem);
+            }
+            
+            if (files.length > 0) {
+                filePreview.style.display = 'flex';
+            }
+        });
+
+        // Open popup
+        expandNotesBtn.addEventListener('click', () => {
+            notesPopup.classList.add('active');
+            detailedNotes.value = quickNotes.value; // Copy quick notes to detailed notes
+        });
+
+        // Close popup
+        closePopupBtn.addEventListener('click', () => {
+            notesPopup.classList.remove('active');
+        });
+
+        // Save notes
+        saveNotesBtn.addEventListener('click', () => {
+            quickNotes.value = detailedNotes.value; // Update quick notes with detailed notes
+            notesPopup.classList.remove('active');
+        });
+
+        // Close popup when clicking outside
+        notesPopup.addEventListener('click', (e) => {
+            if (e.target === notesPopup) {
+                notesPopup.classList.remove('active');
+            }
+        });
+    </script>
+    <script type="module" src="js/lesson.js"></script>
+    <script type="module">
+        import { initializeChat, handleSendMessage, testWebhook } from './js/chat.js';
+        
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // Initialize chat
+                const chatInitialized = await initializeChat();
+                if (!chatInitialized) {
+                    console.error('Failed to initialize chat');
+                    return;
+                }
+                
+                // Automatically test webhook connection
+                console.log('Testing webhook connection...');
+                const webhookTested = await testWebhook();
+                if (!webhookTested) {
+                    console.error('Webhook test failed');
+                    addMessageToChat('⚠️ Connection to server failed. Please try again later.', 'bot');
+                }
+                
+                // Set up send button
+                const sendButton = document.getElementById('send-button');
+                if (sendButton) {
+                    sendButton.addEventListener('click', handleSendMessage);
+                }
+                
+                // Set up Enter key for sending messages
+                const messageInput = document.getElementById('message-input');
+                if (messageInput) {
+                    messageInput.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSendMessage();
+                        }
+                    });
+                }
+                
+            } catch (error) {
+                console.error('Error initializing chat:', error);
+                addMessageToChat('⚠️ Error initializing chat. Please refresh the page.', 'bot');
+            }
+        });
+    </script>
+    
+    <!-- Direct global handler for send button -->
+    <script>
+        // Global send function that can be called directly from button onclick
+        window.sendChatMessage = function() {
+            console.log('Global send function called');
+            const event = new Event('chat-send');
+            document.dispatchEvent(event);
+        }
+    </script>
+</body>
+</html>

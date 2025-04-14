@@ -1,0 +1,301 @@
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background-color: #000;
+    color: #fff;
+    min-height: 100vh;
+}
+
+/* Header styles */
+header {
+    padding: 1rem 5%;
+    background-color: #000;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: #000;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.user-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    position: relative;
+}
+
+#username {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+    color: #fff;
+    font-size: 1rem;
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.logo-section img {
+    height: 60px;
+    width: auto;
+}
+
+.nav-title {
+    color: #00C46F;
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+.menu-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+}
+
+/* Menu Content Styles */
+.menu-content {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: #000;
+    border: 1px solid #00C46F;
+    border-radius: 8px;
+    padding: 1rem;
+    min-width: 200px;
+    box-shadow: 0 4px 6px rgba(0, 196, 111, 0.1);
+    z-index: 1001;
+    margin-top: 10px;
+}
+
+.menu-content ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.menu-content li {
+    margin-bottom: 0.5rem;
+}
+
+.menu-content a {
+    color: #fff;
+    text-decoration: none;
+    display: block;
+    padding: 0.5rem;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.menu-content a:hover {
+    background-color: #00C46F;
+    color: #000;
+}
+
+.menu-content li:last-child a {
+    color: #ff4444;
+}
+
+.menu-content li:last-child a:hover {
+    background-color: #ff4444;
+    color: #fff;
+}
+
+/* Dashboard Container */
+.dashboard-container {
+    padding-top: 80px;
+    min-height: 100vh;
+}
+
+/* Hero Section */
+.hero-section {
+    padding: 2rem 5%;
+}
+
+.hero-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+}
+
+.illustration {
+    flex: 1;
+    max-width: 600px;
+}
+
+.illustration img {
+    width: 100%;
+    height: auto;
+}
+
+.hero-text {
+    flex: 1;
+}
+
+.hero-text h1 {
+    color: #00C46F;
+    font-size: 4rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+/* Courses Section */
+.courses-section {
+    padding: 2rem 5%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.section-header h2 {
+    color: #00C46F;
+    font-size: 1.5rem;
+}
+
+.arrow-icon {
+    color: #00C46F;
+    font-size: 1.5rem;
+}
+
+.courses-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    justify-content: center;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.course-card {
+    background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('ChatGPT Image Apr 10, 2025, 01_40_28 AM.png');
+    background-size: cover;
+    background-position: center;
+    border-radius: 15px;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    width: 100%;
+    aspect-ratio: 1;
+    max-width: 250px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    text-decoration: none;
+}
+
+.course-card.disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.course-card.disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.course-card:not(.disabled):hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 196, 111, 0.2);
+}
+
+.course-logo {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 1.5rem;
+    object-fit: contain;
+    position: relative;
+    z-index: 2;
+}
+
+.course-card h3 {
+    color: #fff;
+    font-size: 1.2rem;
+    font-weight: 500;
+    position: relative;
+    z-index: 2;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+a.course-card {
+    text-decoration: none;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .courses-grid {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 600px;
+    }
+    
+    .course-card {
+        max-width: 250px;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-content {
+        flex-direction: column;
+    }
+
+    .hero-text h1 {
+        font-size: 3rem;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-text h1 {
+        font-size: 2.5rem;
+    }
+
+    .courses-grid {
+        grid-template-columns: 1fr;
+        max-width: 250px;
+    }
+    
+    .course-card {
+        max-width: 250px;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.hero-content,
+.course-card {
+    animation: fadeIn 0.5s ease-out forwards;
+}

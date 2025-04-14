@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IGCSE Business Studies - Chapters</title>
+    <link rel="stylesheet" href="chapters.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .loading-spinner {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        .error-message {
+            text-align: center;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #fee;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo-section">
+                <img src="Screenshot 2025-04-08 052813.jpg" alt="imtehaan.ai logo">
+                <span class="nav-title"></span>
+            </div>
+            <div class="nav-buttons">
+                <a href="dashboard.html" class="back-btn">
+                    <span class="back-icon">←</span>
+                    Back to Dashboard
+                </a>
+                <button class="menu-btn">
+                    <span class="menu-icon">☰</span>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <main class="chapters-container">
+        <!-- Course Header -->
+        <div class="course-header">
+            <div class="course-info">
+                <img src="university-of-cambridge-logo-2.png" alt="Cambridge Logo" class="cambridge-logo">
+                <h2>IGCSE Business Studies</h2>
+            </div>
+            <div class="course-progress" id="progressContainer">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 15%" id="progressBar"></div>
+                </div>
+                <span class="progress-text" id="progressText">15% Complete</span>
+                <div class="loading-spinner" id="progressSpinner" style="display: none;">Loading...</div>
+                <div class="error-message" id="progressError" style="display: none; color: red;">Failed to load progress</div>
+            </div>
+        </div>
+
+        <!-- Chapters Section -->
+        <section class="chapters-section">
+            <h2>Chapters</h2>
+            <div id="chaptersLoadingSpinner" class="loading-spinner" style="display: none;">Loading chapters...</div>
+            <div id="chaptersError" class="error-message" style="display: none; color: red;">Failed to load chapters</div>
+            <div class="chapters-list" role="list" id="chaptersList">
+                <!-- Chapters will be loaded dynamically -->
+            </div>
+        </section>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const supabaseUrl = 'https://mwhtclxabiraowerfmkz.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im13aHRjbHhhYmlyYW93ZXJmbWt6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA3MDY2MjksImV4cCI6MjA1NjI4MjYyOX0.jwnn4sR78xx08p-8V8d-gSU9EHCjPPnT376Vt9KDO3Q';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+    </script>
+    <script src="js/chapters.js"></script>
+</body>
+</html>

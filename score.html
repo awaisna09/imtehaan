@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Score - IGCSE Business Studies</title>
+    <link rel="stylesheet" href="score.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Score Section -->
+        <div class="score-section">
+            <h2>YOUR SCORE FOR QUESTION PAPER IS :</h2>
+            <div class="score-box"></div>
+        </div>
+
+        <!-- Divider Line -->
+        <div class="divider"></div>
+
+        <!-- Form and Contact Section -->
+        <div class="content-wrapper">
+            <!-- Form Section -->
+            <div class="form-section">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="firstName">FIRST NAME</label>
+                        <input type="text" id="firstName" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="lastName">LAST NAME</label>
+                        <input type="text" id="lastName" class="form-input">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="email">EMAIL</label>
+                        <input type="email" id="email" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="contact">CONTACT</label>
+                        <input type="tel" id="contact" class="form-input">
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="message">WHAT DO YOU HAVE IN MIND</label>
+                    <textarea id="message" class="form-textarea"></textarea>
+                </div>
+
+                <button class="submit-btn">SUBMIT</button>
+            </div>
+
+            <!-- Contact Section -->
+            <div class="contact-section">
+                <h2>CONTACT US</h2>
+                <div class="contact-info">
+                    <p class="phone">+9200 000000</p>
+                    <p class="email">hello@gmail.com</p>
+                </div>
+                <button class="home-btn">BACK TO HOME</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Home button redirect to index page
+        const homeBtn = document.querySelector('.home-btn');
+        homeBtn.addEventListener('click', () => {
+            window.location.href = 'index.html';
+        });
+
+        // File input functionality
+        const fileInput = document.getElementById('file-input');
+        const filePreview = document.querySelector('.file-preview');
+        const attachBtn = document.querySelector('.attach-btn');
+
+        attachBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', () => {
+            filePreview.innerHTML = '';
+            Array.from(fileInput.files).forEach(file => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                
+                if (file.type.startsWith('image/')) {
+                    const img = document.createElement('img');
+                    img.src = URL.createObjectURL(file);
+                    img.className = 'file-thumbnail';
+                    fileItem.appendChild(img);
+                } else {
+                    const icon = document.createElement('span');
+                    icon.className = 'file-icon';
+                    icon.textContent = '📄';
+                    fileItem.appendChild(icon);
+                }
+
+                const fileInfo = document.createElement('div');
+                fileInfo.className = 'file-info';
+                fileInfo.innerHTML = `
+                    <span class="file-name">${file.name}</span>
+                    <span class="file-size">${(file.size / 1024).toFixed(1)} KB</span>
+                `;
+                fileItem.appendChild(fileInfo);
+
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'remove-file';
+                removeBtn.innerHTML = '×';
+                removeBtn.onclick = () => fileItem.remove();
+                fileItem.appendChild(removeBtn);
+
+                filePreview.appendChild(fileItem);
+            });
+        });
+    </script>
+</body>
+</html> 

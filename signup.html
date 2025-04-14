@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - IGCSE Business Studies</title>
+    <link rel="stylesheet" href="signup.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="signup-container">
+        <!-- Logo Section -->
+        <div class="logo-section">
+            <img src="Screenshot_2025-04-08_052813-removebg-preview.png" alt="Logo" class="logo">
+        </div>
+
+        <!-- Signup Box -->
+        <div class="signup-box">
+            <h2>Create Account</h2>
+            <form id="signupForm" class="signup-form">
+                <div class="form-group">
+                    <input type="text" id="fullName" placeholder="Full Name" required>
+                </div>
+                <div class="form-group">
+                    <input type="email" id="email" placeholder="Email" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="password" placeholder="Password" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <input type="password" id="confirmPassword" placeholder="Confirm Password" required minlength="6">
+                </div>
+                <div id="errorMessage" class="error-message"></div>
+                <button type="submit" class="signup-btn">Sign Up</button>
+                <p class="login-link">Already have an account? <a href="login.html">Login</a></p>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Debug mode - set to true to see more detailed error information
+        const DEBUG_MODE = true;
+        
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const fullName = document.getElementById('fullName').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const errorMessage = document.getElementById('errorMessage');
+            const submitButton = document.querySelector('.signup-btn');
+            
+            // Clear previous error messages
+            errorMessage.textContent = '';
+            
+            // Validate passwords match
+            if (password !== confirmPassword) {
+                errorMessage.textContent = 'Passwords do not match!';
+                return;
+            }
+            
+            // Validate password length
+            if (password.length < 6) {
+                errorMessage.textContent = 'Password must be at least 6 characters long';
+                return;
+            }
+
+            // Show loading state
+            const originalButtonText = submitButton.textContent;
+            submitButton.textContent = 'Signing up...';
+            submitButton.disabled = true;
+
+            try {
+                console.log('=== START SIGNUP REQUEST ===');
+                console.log('1. Preparing request...');
+                
+                const requestBody = { email, password, fullName };
+                console.log('2. Request body:', requestBody);
+                
+                // First, test the server connection
+                console.log('Checking server status...');
+                try {
+                    const testResponse = await fetch('/api/test');
+                    const testData = await testResponse.json();
+                    console.log('Server status:', testData);
+                    
+                    if (!testData.supabaseConnection || testData.supabaseConnection !== 'Connected') {
+                        throw new Error('Database connection issue detected. Please try again later.');
+                    }
+                } catch (testError) {
+                    console.error('Server test failed:', testError);
+                    // Continue with signup attempt anyway
+                }
+                
+                console.log('3. Sending signup request...');
+                const response = await fetch('/api/auth/signup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody),
+                    // Add timeout to prevent hanging requests
+                    signal: AbortSignal.timeout(15000) // 15 second timeout
+                }).catch(error => {
+                    console.error('4. Network error:', error);
+                    throw new Error('Unable to connect to the server. Please check your internet connection and try again.');
+                });
+
+                if (!response) {
+                    console.error('5. No response received');
+                    throw new Error('No response received from server');
+                }
+
+                console.log('6. Response received:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    headers: Object.fromEntries(response.headers.entries())
+                });
+                
+                // Check if response is empty
+                const responseText = await response.text();
+                console.log('7. Raw response text:', responseText);
+                
+                if (!responseText) {
+                    console.error('8. Empty response received');
+                    throw new Error('Empty response received from server');
+                }
+
+                // Try to parse JSON
+                let data;
+                try {
+                    console.log('9. Attempting to parse JSON...');
+                    data = JSON.parse(responseText);
+                    console.log('10. Parsed response data:', data);
+                } catch (parseError) {
+                    console.error('11. JSON parse error:', parseError);
+                    console.error('12. Failed to parse response:', responseText);
+                    throw new Error('Invalid response from server. Please try again.');
+                }
+
+                if (response.ok) {
+                    console.log('13. Request successful');
+                    // Check if email confirmation is required
+                    if (data.requiresEmailConfirmation) {
+                        console.log('14. Email confirmation required');
+                        // Show success message with email confirmation instructions
+                        errorMessage.style.color = '#00C46F';
+                        errorMessage.textContent = data.details || 'Please check your email to confirm your account before signing in.';
+                        
+                        // Redirect to login page after 5 seconds
+                        setTimeout(() => {
+                            window.location.href = 'login.html';
+                        }, 5000);
+                    } else {
+                        console.log('15. No email confirmation required');
+                        // Show success message
+                        errorMessage.style.color = '#00C46F';
+                        errorMessage.textContent = 'Signup successful! Redirecting to login...';
+                        
+                        // Redirect to login page after 2 seconds
+                        setTimeout(() => {
+                            window.location.href = 'login.html';
+                        }, 2000);
+                    }
+                } else {
+                    console.log('16. Request failed');
+                    // Show detailed error message
+                    errorMessage.textContent = data.error || 'Signup failed. Please try again.';
+                    if (data.details) {
+                        errorMessage.textContent += ': ' + data.details;
+                        console.error('17. Error details:', data.details);
+                    }
+                    
+                    // Special handling for rate limit errors
+                    if (data.code === 'RATE_LIMIT_EXCEEDED') {
+                        console.log('18. Rate limit exceeded');
+                        // Add a suggestion to try a different email
+                        const emailInput = document.getElementById('email');
+                        emailInput.style.borderColor = '#ff4444';
+                        
+                        // Add a note about waiting
+                        const rateLimitNote = document.createElement('p');
+                        rateLimitNote.className = 'rate-limit-note';
+                        rateLimitNote.textContent = 'Tip: Try using a different email address or wait 15-30 minutes before trying again.';
+                        rateLimitNote.style.color = '#ffaa00';
+                        rateLimitNote.style.fontSize = '12px';
+                        rateLimitNote.style.marginTop = '5px';
+                        rateLimitNote.style.textAlign = 'center';
+                        
+                        // Insert after the error message
+                        errorMessage.parentNode.insertBefore(rateLimitNote, errorMessage.nextSibling);
+                    }
+                    
+                    // In debug mode, show more detailed error information
+                    if (DEBUG_MODE) {
+                        const debugInfo = document.createElement('div');
+                        debugInfo.className = 'debug-info';
+                        debugInfo.style.marginTop = '10px';
+                        debugInfo.style.padding = '10px';
+                        debugInfo.style.backgroundColor = 'rgba(0,0,0,0.2)';
+                        debugInfo.style.borderRadius = '5px';
+                        debugInfo.style.fontSize = '12px';
+                        debugInfo.style.color = '#aaa';
+                        debugInfo.style.textAlign = 'left';
+                        debugInfo.style.maxHeight = '100px';
+                        debugInfo.style.overflow = 'auto';
+                        
+                        debugInfo.innerHTML = `
+                            <strong>Debug Info:</strong><br>
+                            Status: ${response.status}<br>
+                            Error: ${data.error}<br>
+                            Details: ${data.details || 'None'}<br>
+                            Code: ${data.code || 'None'}<br>
+                            <button onclick="this.parentElement.remove()" style="margin-top:5px;padding:2px 5px;font-size:10px;">Hide</button>
+                        `;
+                        
+                        errorMessage.parentNode.insertBefore(debugInfo, errorMessage.nextSibling);
+                    }
+                }
+            } catch (error) {
+                console.error('19. Error caught:', error);
+                errorMessage.textContent = error.message || 'An error occurred during signup. Please try again.';
+                
+                // Check if it's a network error
+                if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                    errorMessage.textContent = 'Unable to connect to the server. Please check your internet connection and try again.';
+                }
+                
+                // In debug mode, show the actual error
+                if (DEBUG_MODE) {
+                    const debugInfo = document.createElement('div');
+                    debugInfo.className = 'debug-info';
+                    debugInfo.style.marginTop = '10px';
+                    debugInfo.style.padding = '10px';
+                    debugInfo.style.backgroundColor = 'rgba(0,0,0,0.2)';
+                    debugInfo.style.borderRadius = '5px';
+                    debugInfo.style.fontSize = '12px';
+                    debugInfo.style.color = '#aaa';
+                    debugInfo.style.textAlign = 'left';
+                    debugInfo.style.maxHeight = '100px';
+                    debugInfo.style.overflow = 'auto';
+                    
+                    debugInfo.innerHTML = `
+                        <strong>Debug Info:</strong><br>
+                        Error: ${error.message}<br>
+                        Type: ${error.name}<br>
+                        <button onclick="this.parentElement.remove()" style="margin-top:5px;padding:2px 5px;font-size:10px;">Hide</button>
+                    `;
+                    
+                    errorMessage.parentNode.insertBefore(debugInfo, errorMessage.nextSibling);
+                }
+            } finally {
+                console.log('=== END SIGNUP REQUEST ===');
+                // Reset button state
+                submitButton.textContent = originalButtonText;
+                submitButton.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html> 

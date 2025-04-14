@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Past Papers - IGCSE Business Studies</title>
+    <link rel="stylesheet" href="paper.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Main Content -->
+    <main class="main-container">
+        <!-- Left Sidebar -->
+        <aside class="sidebar">
+            <!-- Navigation Tabs -->
+            <div class="nav-tabs">
+                <a href="lesson.html" class="tab-btn">
+                    <span class="tab-icon">📚</span>
+                    <span class="tab-text">Lessons</span>
+                </a>
+                <a href="questions.html" class="tab-btn">
+                    <span class="tab-icon">❓</span>
+                    <span class="tab-text">Question</span>
+                </a>
+                <a href="paper.html" class="tab-btn active">
+                    <span class="tab-icon">📝</span>
+                    <span class="tab-text">Past Paper</span>
+                </a>
+            </div>
+
+            <!-- Paper Selection -->
+            <div class="paper-section">
+                <h3>Paper:</h3>
+                <div class="paper-buttons">
+                    <button class="paper-btn active">PAPER 1</button>
+                    <button class="paper-btn">PAPER 2</button>
+                </div>
+            </div>
+
+            <!-- Instructions Section (replacing Topics List) -->
+            <div class="instructions-section">
+                <div class="instruction-text">
+                    <p>QUESTION PAPER CONSISTS OF VARIOUS QUESTIONS FROM ALL THE TOPICS IN IGCSE BUSINESS STUDIES.</p>
+                    <p>READ THE QUESTIONS ONE BY ONE AND ANSWER IN THE RESPONSE AREA, ALONG WITH THEIR QUESTION NUMBERS</p>
+                    <p>ONCE YOU HAVE DONE YOUR PAPER, CLICK ON SUBMIT BUTTON BELOW AND SAVE YOUR RESPONSE.</p>
+                </div>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="nav-buttons">
+                <button class="nav-btn">Next Paper</button>
+                <button class="nav-btn">Previous Paper</button>
+            </div>
+
+            <!-- Notes Section -->
+            <div class="notes-section">
+                <h3>Notes</h3>
+                <textarea placeholder="Quick notes..." class="quick-notes"></textarea>
+                <button class="expand-notes-btn">Expand Notes</button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <section class="content-area">
+            <h1 class="page-header">Exam style questions</h1>
+            
+            <!-- Questions Box -->
+            <div class="questions-box">
+                <h2>Questions paper</h2>
+                <div class="questions-list">
+                    <div class="question-item">
+                        <h3>Question 1 [8 marks]</h3>
+                        <p>Explain how the following external factors might affect a small retail business:</p>
+                        <ul>
+                            <li>a) Changes in interest rates</li>
+                            <li>b) Increased competition from online retailers</li>
+                        </ul>
+                    </div>
+
+                    <div class="question-item">
+                        <h3>Question 2 [6 marks]</h3>
+                        <p>Identify and explain three benefits of market research to a business planning to launch a new product.</p>
+                    </div>
+
+                    <div class="question-item">
+                        <h3>Question 3 [10 marks]</h3>
+                        <p>A manufacturing company is considering changing from batch production to flow production.</p>
+                        <p>a) Explain two advantages and two disadvantages of flow production for this business. [6]</p>
+                        <p>b) Do you think this would be a good decision for the business? Justify your answer. [4]</p>
+                    </div>
+
+                    <div class="question-item">
+                        <h3>Question 4 [12 marks]</h3>
+                        <p>Read the following case study and answer the questions below:</p>
+                        <div class="case-study">
+                            <p>ABC Electronics is a medium-sized business that manufactures smartphones. The company is facing increased competition and rising costs. The management is considering either reducing prices or increasing advertising spending to maintain market share.</p>
+                        </div>
+                        <p>a) Explain two possible advantages and two possible disadvantages of reducing prices. [8]</p>
+                        <p>b) Recommend whether the business should reduce prices or increase advertising. Justify your answer. [4]</p>
+                    </div>
+
+                    <div class="question-item">
+                        <h3>Question 5 [8 marks]</h3>
+                        <p>Explain four ways in which good customer service can benefit a retail business.</p>
+                    </div>
+
+                    <div class="question-item">
+                        <h3>Question 6 [10 marks]</h3>
+                        <p>A business is planning to expand by opening new branches in different locations.</p>
+                        <p>a) Identify and explain two sources of finance that would be suitable for this expansion. [6]</p>
+                        <p>b) Explain two factors the business should consider when choosing locations for the new branches. [4]</p>
+                    </div>
+
+                    <div class="question-item">
+                        <h3>Question 7 [6 marks]</h3>
+                        <p>Explain three motivational theories that managers could use to improve employee productivity.</p>
+                    </div>
+
+                    <div class="question-item">
+                        <h3>Question 8 [8 marks]</h3>
+                        <p>Discuss how changes in economic factors might affect the success of a luxury car manufacturer.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button class="action-btn show-guidelines-btn">
+                    <span class="icon">📋</span>
+                    Show answering guidelines
+                </button>
+            </div>
+
+            <!-- Answer Input -->
+            <div class="chat-input">
+                <div class="input-wrapper">
+                    <input type="text" placeholder="Type your response here" class="message-input">
+                    <div class="input-actions">
+                        <button class="attach-btn" onclick="document.getElementById('file-input').click()">📎</button>
+                        <button class="send-btn">▶</button>
+                    </div>
+                </div>
+                <input type="file" id="file-input" class="file-input" multiple>
+                <div class="file-preview"></div>
+            </div>
+        </section>
+
+        <!-- Notes Popup -->
+        <div class="notes-popup" id="notesPopup">
+            <div class="notes-popup-content">
+                <div class="notes-popup-header">
+                    <h2>Your Notes</h2>
+                    <button class="close-popup">&times;</button>
+                </div>
+                <textarea placeholder="Write your detailed notes here..." class="detailed-notes"></textarea>
+                <button class="save-notes-btn">Save Notes</button>
+            </div>
+        </div>
+
+        <!-- Answer Guidelines Popup -->
+        <div class="guidelines-popup" id="guidelinesPopup">
+            <div class="guidelines-popup-content">
+                <div class="guidelines-popup-header">
+                    <h2>Answer Guidelines</h2>
+                    <button class="close-guidelines">&times;</button>
+                </div>
+                <div class="guidelines-content">
+                    <h3>How to Answer Past Paper Questions:</h3>
+                    <ul>
+                        <li>Read each question carefully and understand what is being asked</li>
+                        <li>Plan your time according to the marks allocated</li>
+                        <li>Use business terminology appropriately</li>
+                        <li>Support your answers with relevant examples</li>
+                        <li>Structure your responses clearly</li>
+                        <li>Review your answers before submitting</li>
+                        <li>Make sure to answer all parts of each question</li>
+                    </ul>
+                    <h3>Time Management:</h3>
+                    <ul>
+                        <li>2 marks question: 2-3 minutes</li>
+                        <li>4 marks question: 5-6 minutes</li>
+                        <li>6 marks question: 8-10 minutes</li>
+                        <li>8 marks question: 12-15 minutes</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Guidelines Popup
+        const showGuidelinesBtn = document.querySelector('.show-guidelines-btn');
+        const guidelinesPopup = document.querySelector('.guidelines-popup');
+        const closeGuidelinesBtn = document.querySelector('.close-guidelines');
+
+        showGuidelinesBtn.addEventListener('click', () => {
+            guidelinesPopup.classList.add('active');
+        });
+
+        closeGuidelinesBtn.addEventListener('click', () => {
+            guidelinesPopup.classList.remove('active');
+        });
+
+        guidelinesPopup.addEventListener('click', (e) => {
+            if (e.target === guidelinesPopup) {
+                guidelinesPopup.classList.remove('active');
+            }
+        });
+
+        // Notes popup functionality
+        const expandNotesBtn = document.querySelector('.expand-notes-btn');
+        const notesPopup = document.querySelector('.notes-popup');
+        const closePopupBtn = document.querySelector('.close-popup');
+        const saveNotesBtn = document.querySelector('.save-notes-btn');
+        const quickNotes = document.querySelector('.quick-notes');
+        const detailedNotes = document.querySelector('.detailed-notes');
+
+        expandNotesBtn.addEventListener('click', () => {
+            notesPopup.classList.add('active');
+            detailedNotes.value = quickNotes.value;
+        });
+
+        closePopupBtn.addEventListener('click', () => {
+            notesPopup.classList.remove('active');
+        });
+
+        saveNotesBtn.addEventListener('click', () => {
+            quickNotes.value = detailedNotes.value;
+            notesPopup.classList.remove('active');
+        });
+
+        notesPopup.addEventListener('click', (e) => {
+            if (e.target === notesPopup) {
+                notesPopup.classList.remove('active');
+            }
+        });
+
+        // Send button redirect to score page
+        const sendBtn = document.querySelector('.send-btn');
+        sendBtn.addEventListener('click', () => {
+            window.location.href = 'score.html';
+        });
+
+        // File input functionality
+        const fileInput = document.getElementById('file-input');
+        const filePreview = document.querySelector('.file-preview');
+        const attachBtn = document.querySelector('.attach-btn');
+
+        attachBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', () => {
+            filePreview.innerHTML = '';
+            Array.from(fileInput.files).forEach(file => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                
+                if (file.type.startsWith('image/')) {
+                    const img = document.createElement('img');
+                    img.src = URL.createObjectURL(file);
+                    img.className = 'file-thumbnail';
+                    fileItem.appendChild(img);
+                } else {
+                    const icon = document.createElement('span');
+                    icon.className = 'file-icon';
+                    icon.textContent = '📄';
+                    fileItem.appendChild(icon);
+                }
+
+                const fileInfo = document.createElement('div');
+                fileInfo.className = 'file-info';
+                fileInfo.innerHTML = `
+                    <span class="file-name">${file.name}</span>
+                    <span class="file-size">${(file.size / 1024).toFixed(1)} KB</span>
+                `;
+                fileItem.appendChild(fileInfo);
+
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'remove-file';
+                removeBtn.innerHTML = '×';
+                removeBtn.onclick = () => fileItem.remove();
+                fileItem.appendChild(removeBtn);
+
+                filePreview.appendChild(fileItem);
+            });
+        });
+
+        // Paper button functionality
+        const paperBtns = document.querySelectorAll('.paper-btn');
+        paperBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                paperBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html> 

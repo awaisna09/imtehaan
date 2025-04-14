@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Activity Topics - IGCSE Business Studies</title>
+    <link rel="stylesheet" href="topics.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+        window.supabase = supabase
+    </script>
+</head>
+<body>
+    <header class="main-header">
+        <nav class="main-nav">
+            <div class="logo-section">
+                <img src="Screenshot 2025-04-08 052813.jpg" alt="imtehaan.ai logo" class="logo">
+                <span class="nav-title" aria-label="Current chapter"></span>
+            </div>
+            <div class="nav-buttons">
+                <a href="chapters.html" class="back-btn" aria-label="Return to chapters list">
+                    <span class="back-icon" aria-hidden="true">←</span>
+                    Back to Chapters
+                </a>
+                <button class="menu-btn" aria-label="Open menu">
+                    <span class="menu-icon" aria-hidden="true">☰</span>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <main class="topics-container">
+        <!-- Course Header -->
+        <div class="course-header">
+            <div class="course-info">
+                <img src="university-of-cambridge-logo-2.png" alt="Cambridge Logo" class="cambridge-logo">
+                <div class="course-text">
+                    <h1>IGCSE Business Studies</h1>
+                    <p class="course-description">Comprehensive study materials and interactive learning</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Topics Section -->
+        <section class="topics-section">
+            <h2 class="section-title">Topics</h2>
+            
+            <div class="topics-list" role="list" aria-label="List of topics">
+                <!-- Topics will be dynamically loaded here -->
+                <div class="loading-spinner" aria-live="polite">
+                    <div class="spinner" aria-hidden="true"></div>
+                    <p>Loading topics...</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Popup Modal -->
+    <div class="modal" id="topicModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Topic Details</h2>
+                <span class="close-btn">&times;</span>
+            </div>
+            <div class="modal-body">
+                <!-- Content will be dynamically inserted here -->
+            </div>
+            <div class="modal-footer">
+                <div class="progress-indicator">
+                    <div class="progress-bar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="topics.js"></script>
+</body>
+</html>

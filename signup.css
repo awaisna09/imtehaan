@@ -1,0 +1,187 @@
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    background: url('ChatGPT Image Apr 10, 2025, 01_40_28 AM.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+/* Signup Container */
+.signup-container {
+    width: 100%;
+    max-width: 400px;
+    padding: 2rem;
+}
+
+/* Logo Section */
+.logo-section {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    margin-bottom: 0;
+}
+
+.logo {
+    height: 60px;
+    width: auto;
+    object-fit: contain;
+}
+
+/* Signup Box */
+.signup-box {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    animation: fadeIn 0.5s ease-out;
+}
+
+.signup-box h2 {
+    color: #fff;
+    text-align: center;
+    margin-bottom: 1.2rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+/* Form Styles */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 0.3rem;
+    font-size: 0.9rem;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.6rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 0.9rem;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #00C46F;
+}
+
+.form-group input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* Form Options */
+.form-options {
+    margin-bottom: 1.5rem;
+}
+
+.terms {
+    margin-bottom: 1rem;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+}
+
+.terms input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #00C46F;
+    margin-right: 0.5rem;
+}
+
+/* Signup Button */
+.signup-btn {
+    width: 100%;
+    padding: 1rem;
+    background: #00C46F;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-bottom: 1rem;
+}
+
+.signup-btn:hover {
+    background: #00C46F;
+}
+
+/* Login Link */
+.login-link {
+    text-align: center;
+    margin-top: 0.8rem;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+}
+
+.login-link a {
+    color: #00C46F;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.login-link a:hover {
+    color: #00C46F;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+    .signup-container {
+        padding: 1rem;
+    }
+
+    .signup-box {
+        padding: 2rem;
+    }
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.error-message {
+    color: #ff4444;
+    font-size: 14px;
+    margin-bottom: 15px;
+    text-align: center;
+    min-height: 20px;
+}
+
+.rate-limit-note {
+    color: #ffaa00;
+    font-size: 12px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    text-align: center;
+    font-style: italic;
+} 

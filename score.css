@@ -1,0 +1,212 @@
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background-color: #f5f5f5;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 3rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Score Section */
+.score-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.score-section h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.score-box {
+    width: 150px;
+    height: 80px;
+    border: 2px solid #00C46F;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 600;
+    color: #00C46F;
+}
+
+/* Divider */
+.divider {
+    width: 100%;
+    height: 1px;
+    background-color: #ddd;
+    margin: 3rem 0;
+}
+
+/* Content Wrapper */
+.content-wrapper {
+    display: flex;
+    gap: 4rem;
+}
+
+/* Form Section */
+.form-section {
+    flex: 2;
+}
+
+.form-row {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group.full-width {
+    margin-bottom: 1.5rem;
+}
+
+label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #333;
+}
+
+.form-input {
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #00C46F;
+}
+
+.form-textarea {
+    height: 150px;
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    resize: none;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.form-textarea:focus {
+    outline: none;
+    border-color: #00C46F;
+}
+
+/* Contact Section */
+.contact-section {
+    flex: 1;
+    padding-left: 2rem;
+    border-left: 1px solid #ddd;
+}
+
+.contact-section h2 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 2rem;
+}
+
+.contact-info {
+    margin-bottom: 2rem;
+}
+
+.contact-info p {
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 1rem;
+}
+
+/* Buttons */
+.submit-btn, .home-btn {
+    padding: 0.8rem 2rem;
+    font-size: 1rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.submit-btn {
+    background-color: #00C46F;
+    color: #fff;
+    width: 100%;
+    max-width: 200px;
+}
+
+.submit-btn:hover {
+    background-color: #00C46F;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 196, 111, 0.2);
+}
+
+.home-btn {
+    background-color: #00C46F;
+    color: #fff;
+    width: 100%;
+}
+
+.home-btn:hover {
+    background-color: #00C46F;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 196, 111, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 1.5rem;
+    }
+
+    .content-wrapper {
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .form-row {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .contact-section {
+        padding-left: 0;
+        border-left: none;
+        border-top: 1px solid #ddd;
+        padding-top: 2rem;
+    }
+
+    .score-section {
+        flex-direction: column;
+        text-align: center;
+    }
+} 

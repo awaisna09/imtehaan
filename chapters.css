@@ -1,0 +1,317 @@
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background-color: #000;
+    color: #fff;
+    min-height: 100vh;
+}
+
+/* Header styles */
+header {
+    padding: 1rem 5%;
+    background-color: #000;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.logo-section img {
+    height: 60px;
+    width: auto;
+}
+
+.nav-title {
+    color: #00C46F;
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+.nav-buttons {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.back-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #00C46F;
+    text-decoration: none;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+    transform: translateX(-5px);
+}
+
+.back-icon {
+    font-size: 1.2rem;
+}
+
+.menu-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+}
+
+/* Main Container */
+.chapters-container {
+    padding-top: 80px;
+    min-height: 100vh;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-left: 5%;
+    padding-right: 5%;
+}
+
+/* Course Header */
+.course-header {
+    background-color: #00C46F;
+    padding: 2rem;
+    border-radius: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.course-header h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #000;
+}
+
+.cambridge-logo {
+    width: 100px;
+    height: auto;
+}
+
+.course-info {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.course-info h2 {
+    color: #000;
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.course-progress {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+}
+
+.progress-bar {
+    width: 200px;
+    height: 8px;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background-color: #000;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    color: #000;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* Chapters Section */
+.chapters-section {
+    padding: 1rem 0;
+}
+
+.chapters-section h2 {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    color: #fff;
+}
+
+/* Loading and Error States */
+.loading-spinner {
+    text-align: center;
+    padding: 20px;
+    color: #00C46F;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.loading-spinner::after {
+    content: '';
+    width: 20px;
+    height: 20px;
+    border: 2px solid #00C46F;
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.error-message {
+    text-align: center;
+    padding: 15px;
+    margin: 15px 0;
+    background-color: rgba(255, 0, 0, 0.1);
+    border: 1px solid rgba(255, 0, 0, 0.3);
+    border-radius: 8px;
+    color: #ff4444;
+    font-size: 0.9rem;
+}
+
+/* Scrollable Chapters List */
+.chapters-list {
+    height: calc(100vh - 300px); /* Adjust based on header and course header height */
+    overflow-y: auto;
+    padding-right: 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Custom Scrollbar */
+.chapters-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.chapters-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.chapters-list::-webkit-scrollbar-thumb {
+    background: #00C46F;
+    border-radius: 4px;
+}
+
+/* Chapter Cards */
+.chapter-card {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: block;
+}
+
+.chapter-card:hover {
+    background-color: rgba(0, 196, 111, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 196, 111, 0.2);
+}
+
+.chapter-content {
+    padding: 1.5rem;
+}
+
+.chapter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.chapter-title {
+    color: #00C46F;
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+.chapter-progress {
+    color: #00C46F;
+    font-size: 0.9rem;
+    font-weight: 500;
+    background-color: rgba(0, 196, 111, 0.1);
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+}
+
+.chapter-subtitle {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .course-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+    }
+
+    .course-info {
+        flex-direction: column;
+    }
+
+    .course-progress {
+        align-items: center;
+    }
+
+    .progress-bar {
+        width: 100%;
+    }
+
+    .chapters-list {
+        height: calc(100vh - 350px);
+    }
+
+    .nav-buttons {
+        gap: 1rem;
+    }
+
+    .back-btn span:last-child {
+        display: none;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.course-header,
+.chapter-card {
+    animation: fadeIn 0.5s ease-out forwards;
+}

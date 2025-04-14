@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Interface</title>
+    <link rel="stylesheet" href="chat.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="main-container">
+        <div class="content-area">
+            <div class="content-box">
+                <div class="chat-container">
+                    <!-- Initial welcome message will be added here -->
+                </div>
+                <div class="chat-input-container">
+                    <div class="input-wrapper">
+                        <textarea class="message-input" placeholder="Type your message here..." rows="1"></textarea>
+                        <div class="input-actions">
+                            <button class="attach-btn" title="Attach files">
+                                <i class="fas fa-paperclip"></i>
+                            </button>
+                            <button class="send-btn" title="Send message">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <input type="file" id="file-input" class="file-input" multiple accept="image/*,.pdf,.doc,.docx">
+                    <div class="file-preview"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="js/chat.js"></script>
+</body>
+</html>
