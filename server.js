@@ -8,6 +8,7 @@ const dotenv = require('dotenv');
 const winston = require('winston');
 const NodeCache = require('node-cache');
 const path = require('path');
+const jwt = require('jsonwebtoken');
 
 // Configure logger
 const logger = winston.createLogger({
@@ -35,6 +36,7 @@ const requiredEnvVars = [
   'PORT',
   'ALLOWED_ORIGINS',
   'NODE_ENV',
+  'JWT_SECRET',
 ];
 
 for (const envVar of requiredEnvVars) {
@@ -61,10 +63,11 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
         styleSrc: ["'self'", "'unsafe-inline'"],
         imgSrc: ["'self'", 'data:', 'https:'],
         connectSrc: ["'self'", process.env.SUPABASE_URL],
+        fontSrc: ["'self'", 'data:', 'https:'],
       },
     },
   })
@@ -82,9 +85,16 @@ const limiter = rateLimit({
 app.use(limiter);
 
 // CORS configuration
+const allowedOrigins = process.env.ALLOWED_ORIGINS.split(',');
 app.use(
   cors({
-    origin: process.env.ALLOWED_ORIGINS.split(','),
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
     credentials: true,
@@ -213,29 +223,17 @@ async function testSupabaseConnection(retries = 3) {
 app.use('/api/chapters', cacheMiddleware(3600), chaptersRouter);
 app.use('/api/topics', cacheMiddleware(3600), topicsRouter);
 
-// Serve static files from the src/public directory
-app.use(
-  express.static(path.join(__dirname, 'src', 'public'), {
-    index: false,
-    setHeaders: (res, path) => {
-      res.setHeader('X-Content-Type-Options', 'nosniff');
-      res.setHeader('X-Frame-Options', 'DENY');
-    },
-  })
-);
-
-// Serve views from the src/views directory
-app.set('views', path.join(__dirname, 'src', 'views'));
-app.set('view engine', 'html');
+// Serve static files from the React app's build directory
+app.use(express.static(path.join(__dirname, 'my-react-app', 'build')));
 
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
-// Main interface route
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+// All other routes should serve the React app
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'my-react-app', 'build', 'index.html'));
 });
 
 // Error handling middleware
@@ -249,16 +247,118 @@ app.use((err, req, res, next) => {
   });
 
   res.status(err.status || 500).json({
-    error: 'Internal Server Error',
-    message:
-      process.env.NODE_ENV === 'development'
-        ? err.message
-        : 'An error occurred',
+    error: {
+      message: err.message || 'Internal Server Error',
+      ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+    },
   });
 });
 
+// Authentication middleware
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ error: 'Authentication token required' });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({ error: 'Invalid or expired token' });
+    }
+    req.user = user;
+    next();
+  });
+};
+
+// Authentication routes
+app.post('/api/v1/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const { data: { user }, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      logger.error('Login error:', error);
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    const token = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    res.json({ token, user: { id: user.id, email: user.email } });
+  } catch (error) {
+    logger.error('Login error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/v1/auth/signup', async (req, res) => {
+  try {
+    const { email, password, name } = req.body;
+
+    const { data: { user }, error } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+
+    if (error) {
+      logger.error('Signup error:', error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    // Create user profile
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .insert([{ id: user.id, full_name: name, email }]);
+
+    if (profileError) {
+      logger.error('Profile creation error:', profileError);
+      return res.status(500).json({ error: 'Failed to create profile' });
+    }
+
+    const token = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    res.status(201).json({ token, user: { id: user.id, email: user.email } });
+  } catch (error) {
+    logger.error('Signup error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/v1/auth/verify', authenticateToken, async (req, res) => {
+  try {
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', req.user.id)
+      .single();
+
+    if (error) {
+      logger.error('Profile fetch error:', error);
+      return res.status(404).json({ error: 'User profile not found' });
+    }
+
+    res.json({ user: profile });
+  } catch (error) {
+    logger.error('Verification error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Start the server
-const PORT = process.env.PORT || 5500;
+const PORT = process.env.PORT || 3000;
 const server = app
   .listen(PORT, () => {
     logger.info(`Server is running on port ${PORT}`);
@@ -275,16 +375,14 @@ const server = app
     process.exit(1);
   });
 
-// Graceful shutdown function
-function shutdown(signal) {
-  logger.info(`Received ${signal}. Starting graceful shutdown...`);
-  // Close database connections, stop accepting new requests, etc.
-  process.exit(0);
-}
-
-// Handle process signals
-process.on('SIGTERM', () => shutdown('SIGTERM'));
-process.on('SIGINT', () => shutdown('SIGINT'));
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  logger.info('SIGTERM received. Shutting down gracefully...');
+  server.close(() => {
+    logger.info('Server closed');
+    process.exit(0);
+  });
+});
 
 // Temporary test route for profile insertion
 app.post('/test-profile', async (req, res) => {
@@ -345,348 +443,6 @@ app.get('/api/test', async (req, res) => {
     environment: envStatus,
   });
 });
-
-// Authentication routes
-app.post('/api/auth/signup', async (req, res) => {
-  console.log('=== START SIGNUP REQUEST ===');
-  // Safety timeout to ensure the request doesn't hang
-  const timeoutId = setTimeout(() => {
-    console.error('REQUEST TIMEOUT: Signup request took too long');
-    if (!res.headersSent) {
-      res.setHeader('Content-Type', 'application/json');
-      res.status(504).send({
-        error: 'Request timeout',
-        details: 'The request took too long to process. Please try again.',
-      });
-    }
-  }, 20000); // 20 second safety timeout
-
-  try {
-    // Test Supabase connection before proceeding
-    console.log('0. Testing Supabase connection...');
-    const connectionTest = await testSupabaseConnection();
-    if (!connectionTest) {
-      console.error('Supabase connection test failed');
-      clearTimeout(timeoutId);
-      res.setHeader('Content-Type', 'application/json');
-      return res.status(503).send({
-        error: 'Service unavailable',
-        details: 'Unable to connect to the database. Please try again later.',
-      });
-    }
-    console.log('Supabase connection test successful');
-
-    console.log('1. Received signup request');
-    console.log('2. Request headers:', req.headers);
-
-    // Parse request body
-    const { email, password, fullName } = req.body;
-    console.log('3. Request body:', { email, fullName });
-
-    // Validate input
-    if (!email || !password || !fullName) {
-      console.log('4. Missing required fields');
-      clearTimeout(timeoutId);
-      res.setHeader('Content-Type', 'application/json');
-      return res.status(400).send({
-        error: 'Missing required fields',
-        details: 'Email, password, and full name are required',
-      });
-    }
-
-    // Workaround for Supabase email validation issues
-    // First check if the email format is reasonable
-    if (!validateEmailFormat(email)) {
-      console.error('Email format validation failed:', email);
-      clearTimeout(timeoutId);
-      res.setHeader('Content-Type', 'application/json');
-      return res.status(400).send({
-        error: 'Invalid email format',
-        details:
-          'Please provide a valid email address with a known domain (like gmail.com, outlook.com, etc.)',
-      });
-    }
-
-    console.log('Email validation passed');
-
-    // Sign up the user
-    console.log('5. Creating auth user...');
-    const authResponse = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
-        },
-        emailRedirectTo: `${req.protocol}://${req.get('host')}/dashboard.html`,
-      },
-    });
-
-    const { data: authData, error: authError } = authResponse;
-
-    console.log(
-      '6. Auth response:',
-      authData ? 'Received auth data' : 'No auth data'
-    );
-    if (authError) {
-      console.error('DETAILED AUTH ERROR:', JSON.stringify(authError, null, 2));
-    }
-    console.log('Auth data:', JSON.stringify(authData, null, 2));
-
-    console.log(
-      '6. Auth response:',
-      authData ? 'Received auth data' : 'No auth data',
-      authError ? `Error: ${authError.message}` : 'No error'
-    );
-
-    if (authError) {
-      console.error('7. Auth error during signup:', authError);
-      clearTimeout(timeoutId);
-      res.setHeader('Content-Type', 'application/json');
-
-      // Check for rate limit error messages with various phrasings
-      if (
-        authError.message &&
-        (authError.message.includes('rate limit exceeded') ||
-          authError.message.includes('email rate limit') ||
-          (authError.message.toLowerCase().includes('rate') &&
-            authError.message.toLowerCase().includes('limit')))
-      ) {
-        return res.status(429).send({
-          error: 'Rate limit exceeded',
-          details:
-            'Too many signup attempts. Please wait 15-30 minutes before trying again or try with a different email address.',
-          code: 'RATE_LIMIT_EXCEEDED',
-        });
-      }
-
-      if (
-        authError.message &&
-        authError.message.includes('User already registered')
-      ) {
-        return res.status(400).send({
-          error: 'User already exists',
-          details:
-            'An account with this email already exists. Please try logging in instead.',
-        });
-      }
-
-      return res.status(400).send({
-        error: 'Signup failed',
-        details: authError.message || 'Authentication failed',
-      });
-    }
-
-    if (!authData || !authData.user) {
-      console.error('8. No user data returned from signup');
-      clearTimeout(timeoutId);
-      res.setHeader('Content-Type', 'application/json');
-      return res.status(500).send({
-        error: 'Signup failed',
-        details: 'No user data returned from authentication service',
-      });
-    }
-
-    console.log('9. Auth user created:', authData.user.id);
-
-    // Skip creating profile - simplify signup process to avoid potential issues
-    console.log('10. Skipping profile creation - using auth metadata only');
-
-    // Return success response
-    const successResponse = {
-      success: true,
-      message: 'Signup successful',
-      requiresEmailConfirmation: false,
-      user: {
-        email: authData.user.email,
-        id: authData.user.id,
-        fullName: fullName, // Include this directly from the request
-      },
-    };
-
-    console.log('11. Sending response:', successResponse);
-    clearTimeout(timeoutId);
-
-    // Send response with explicit content type and CORS headers
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader(
-      'Access-Control-Allow-Headers',
-      'Content-Type, Authorization'
-    );
-    res.setHeader('Access-Control-Expose-Headers', 'Content-Type');
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
-    return res.status(200).send(successResponse);
-  } catch (error) {
-    console.error('12. Unexpected error during signup:', error);
-    console.error('Error stack:', error.stack);
-    clearTimeout(timeoutId);
-
-    // Send error response with explicit content type
-    res.setHeader('Content-Type', 'application/json');
-    return res.status(500).send({
-      error: 'Unexpected error',
-      details:
-        error.message ||
-        'An unexpected error occurred during signup. Please try again.',
-    });
-  } finally {
-    console.log('=== END SIGNUP REQUEST ===');
-  }
-});
-
-app.post('/api/auth/signin', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    console.log('\n=== Starting Login Process ===');
-    console.log('Attempting signin for:', email);
-
-    // Skip profiles table check and go directly to auth
-    console.log('1. Attempting direct auth signin...');
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      console.error('❌ Auth signin error:', {
-        message: error.message,
-        status: error.status,
-        name: error.name,
-      });
-
-      // Simplified error handling
-      return res.status(401).json({
-        error: 'Login failed',
-        details:
-          error.message || 'Invalid email or password. Please try again.',
-      });
-    }
-
-    if (!data || !data.user) {
-      return res.status(401).json({
-        error: 'Login failed',
-        details: 'Authentication succeeded but no user data returned.',
-      });
-    }
-
-    console.log('✅ Login successful for user:', data.user.id);
-
-    // Get user metadata from auth user object
-    const fullName = data.user.user_metadata?.full_name || '';
-
-    res.status(200).json({
-      message: 'Login successful',
-      user: {
-        id: data.user.id,
-        email: data.user.email,
-        full_name: fullName,
-      },
-      redirectTo: '/dashboard.html',
-    });
-  } catch (error) {
-    console.error('❌ Unexpected error during signin:', error);
-    res.status(500).json({
-      error: 'Login failed',
-      details: 'An unexpected error occurred. Please try again.',
-    });
-  }
-});
-
-app.post('/api/auth/signout', async (req, res) => {
-  try {
-    const { error } = await supabase.auth.signOut();
-
-    if (error) throw error;
-
-    res.status(200).json({ message: 'Signout successful' });
-  } catch (error) {
-    console.error('Error during signout:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.get('/api/auth/user', async (req, res) => {
-  try {
-    const {
-      data: { user },
-      error,
-    } = await supabase.auth.getUser();
-
-    if (error) throw error;
-
-    if (!user) {
-      return res.status(401).json({ error: 'Not authenticated' });
-    }
-
-    res.status(200).json({ user });
-  } catch (error) {
-    console.error('Error fetching user:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Helper function to validate email format before sending to Supabase
-function validateEmailFormat(email) {
-  // Basic email format validation
-  const basicEmailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!basicEmailRegex.test(email)) {
-    console.log(`Email failed basic regex check: ${email}`);
-    return false;
-  }
-
-  // Extract domain
-  const domain = email.split('@')[1].toLowerCase();
-
-  // List of common email domains
-  const commonDomains = [
-    'gmail.com',
-    'yahoo.com',
-    'outlook.com',
-    'hotmail.com',
-    'aol.com',
-    'icloud.com',
-    'mail.com',
-    'protonmail.com',
-    'me.com',
-    'live.com',
-    'msn.com',
-    'yandex.com',
-    'gmx.com',
-    'zoho.com',
-    'mail.ru',
-  ];
-
-  // Check if domain is in common list
-  if (commonDomains.includes(domain)) {
-    console.log(`Email domain is in common list: ${domain}`);
-    return true;
-  }
-
-  // Check for valid TLDs
-  const validTLDs = [
-    '.com',
-    '.edu',
-    '.org',
-    '.gov',
-    '.net',
-    '.io',
-    '.co',
-    '.app',
-  ];
-
-  for (const tld of validTLDs) {
-    if (domain.endsWith(tld)) {
-      console.log(`Email domain has valid TLD: ${domain} (${tld})`);
-      return true;
-    }
-  }
-
-  console.log(`Email domain failed all checks: ${domain}`);
-  return false;
-}
 
 // Add a dedicated test endpoint for Supabase auth
 app.get('/api/test-auth', async (req, res) => {
