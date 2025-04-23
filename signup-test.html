@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Signup Redirect Test</title>
+  </head>
+  <body>
+    <h2>Signup Redirect Test</h2>
+    <p>
+      This page simulates a successful signup response and tests redirect
+      functionality.
+    </p>
+    <div id="status">Testing...</div>
+    <div id="errorMessage"></div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const errorMessage = document.getElementById('errorMessage');
+        const status = document.getElementById('status');
+
+        // Simulate successful signup
+        status.innerHTML = 'Simulating successful signup response...';
+
+        // Show success message
+        errorMessage.style.color = '#00C46F';
+        errorMessage.textContent = 'Signup successful! Redirecting to login...';
+
+        // Log to console
+        console.log('Signup simulated successfully');
+        console.log('Will redirect to login.html in 2 seconds');
+
+        // Redirect to login page after 2 seconds
+        setTimeout(() => {
+          status.innerHTML = 'Redirecting now...';
+          window.location.href = 'login.html';
+        }, 2000);
+      });
+    </script>
+  </body>
+</html>

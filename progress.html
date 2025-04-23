@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Progress Tracking - Imtehaan.ai</title>
+    <link rel="stylesheet" href="progress.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <!-- Load Chart.js before our scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <!-- Load Supabase before our scripts -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+      // Initialize Supabase
+      const supabaseUrl = 'https://mwhtclxabiraowerfmkz.supabase.co';
+      const supabaseAnonKey =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im13aHRjbHhhYmlyYW93ZXJmbWt6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA3MDY2MjksImV4cCI6MjA1NjI4MjYyOX0.jwnn4sR78xx08p-8V8d-gSU9EHCjPPnT376Vt9KDO3Q';
+      window.supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
+
+      // Get user data from localStorage
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        const user = JSON.parse(userData);
+        if (user.full_name) {
+          window.onload = function () {
+            document.getElementById('username').textContent = user.full_name;
+          };
+        }
+      }
+    </script>
+    <script type="module" src="js/progress.js"></script>
+    <script type="module" src="js/timer.js"></script>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <div class="logo-section">
+          <img src="Screenshot 2025-04-08 052813.jpg" alt="imtehaan.ai logo" />
+          <span class="nav-title">Progress Tracking</span>
+        </div>
+        <div class="user-section">
+          <span id="username">Loading...</span>
+          <button id="menuBtn" class="menu-btn">
+            <i class="fas fa-bars"></i>
+          </button>
+        </div>
+      </nav>
+    </header>
+
+    <main class="progress-container">
+      <section class="study-timer card">
+        <div class="section-header">
+          <i class="fas fa-clock"></i>
+          <h2>Study Timer</h2>
+        </div>
+        <div class="timer-display">
+          <span id="timerDisplay">00:00</span>
+        </div>
+        <div class="timer-controls">
+          <button id="startTimer" class="timer-button">
+            <i class="fas fa-play"></i> Start
+          </button>
+          <button id="pauseTimer" class="timer-button">
+            <i class="fas fa-pause"></i> Pause
+          </button>
+          <button id="resetTimer" class="timer-button">
+            <i class="fas fa-redo"></i> Reset
+          </button>
+        </div>
+      </section>
+
+      <section class="exam-countdown card">
+        <div class="section-header">
+          <i class="fas fa-calendar-alt"></i>
+          <h2>Days Until Exam</h2>
+        </div>
+        <div class="countdown-controls">
+          <div class="date-input">
+            <label for="examDate">Exam Date:</label>
+            <input type="date" id="examDate" />
+          </div>
+          <button id="setExamDate" class="primary-button">
+            <i class="fas fa-save"></i> Set Date
+          </button>
+        </div>
+        <div class="countdown-timer">
+          <div class="timer-circle">
+            <span id="daysLeft">30</span>
+            <span class="timer-label">days</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="study-goals card">
+        <div class="section-header">
+          <i class="fas fa-bullseye"></i>
+          <h2>Daily Study Goals</h2>
+        </div>
+        <div class="goal-form">
+          <div class="goal-input">
+            <label for="studyTime">
+              <i class="fas fa-clock"></i> Daily Study Time (minutes)
+            </label>
+            <input type="number" id="studyTime" min="0" value="60" />
+            <div class="progress-container">
+              <div class="progress-bar" id="studyProgress">
+                <div class="progress-fill"></div>
+              </div>
+              <span class="progress-text">0/60 minutes</span>
+            </div>
+          </div>
+          <div class="goal-input">
+            <label for="questionsGoal">
+              <i class="fas fa-question-circle"></i> Questions to Complete
+            </label>
+            <input type="number" id="questionsGoal" min="0" value="10" />
+            <div class="progress-container">
+              <div class="progress-bar" id="questionsProgress">
+                <div class="progress-fill"></div>
+              </div>
+              <span class="progress-text">0/10 questions</span>
+            </div>
+          </div>
+          <button id="setGoals" class="primary-button">
+            <i class="fas fa-check"></i> Set Goals
+          </button>
+        </div>
+      </section>
+
+      <section class="progress-stats">
+        <div class="stat-card card">
+          <div class="section-header">
+            <i class="fas fa-chart-line"></i>
+            <h3>Time Spent</h3>
+          </div>
+          <div class="chart-container">
+            <canvas id="timeChart" width="400" height="200"></canvas>
+          </div>
+        </div>
+        <div class="stat-card card">
+          <div class="section-header">
+            <i class="fas fa-tasks"></i>
+            <h3>Questions Completed</h3>
+          </div>
+          <div class="chart-container">
+            <canvas id="questionsChart" width="400" height="200"></canvas>
+          </div>
+        </div>
+        <div class="stat-card card">
+          <div class="section-header">
+            <i class="fas fa-keyboard"></i>
+            <h3>Typing Activity</h3>
+          </div>
+          <div class="chart-container">
+            <canvas id="typingChart" width="400" height="200"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <section class="study-plan card">
+        <div class="section-header">
+          <i class="fas fa-graduation-cap"></i>
+          <h2>Study Plan</h2>
+        </div>
+        <div class="plan-options">
+          <button class="plan-button" data-plan="intensive">
+            <i class="fas fa-fire"></i>
+            Intensive (2+ hours/day)
+          </button>
+          <button class="plan-button" data-plan="moderate">
+            <i class="fas fa-balance-scale"></i>
+            Moderate (1-2 hours/day)
+          </button>
+          <button class="plan-button" data-plan="light">
+            <i class="fas fa-feather"></i>
+            Light (30-60 minutes/day)
+          </button>
+        </div>
+        <div class="plan-details" id="planDetails">
+          <!-- Plan details will be populated by JavaScript -->
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

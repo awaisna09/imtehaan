@@ -1,0 +1,90 @@
+Environment variables loaded:
+SUPABASE_URL: https://mwhtclxabiraowerfmkz.supabase.co
+SUPABASE_ANON_KEY: Set (hidden for security)
+PORT: 3000
+Initializing Supabase client with URL: https://mwhtclxabiraowerfmkz.supabase.co
+Supabase client initialized successfully
+Testing Supabase connection...
+Server running on port 3000
+Supabase connection test successful (743ms)
+Retrieved 1 profiles
+Auth service connected successfully
+=== START SIGNUP REQUEST ===
+0. Testing Supabase connection...
+Testing Supabase connection...
+Supabase connection test successful (285ms)
+Retrieved 1 profiles
+Auth service connected successfully
+Supabase connection test successful
+1. Received signup request
+2. Request headers: {
+  host: 'localhost:3000',
+  'user-agent': 'curl/8.6.0',
+  accept: '*/*',
+  'content-type': 'application/json',
+  'content-length': '77'
+}
+3. Request body: { email: 'test123@gmail.com', fullName: 'Test User' }
+5. Creating auth user...
+6. Auth response: Received auth data
+Auth data: {
+  "user": {
+    "id": "dee89266-5154-41f0-9aa6-337cd1f5f697",
+    "aud": "authenticated",
+    "role": "authenticated",
+    "email": "test123@gmail.com",
+    "phone": "",
+    "confirmation_sent_at": "2025-04-16T23:05:40.008064489Z",
+    "app_metadata": {
+      "provider": "email",
+      "providers": [
+        "email"
+      ]
+    },
+    "user_metadata": {
+      "email": "test123@gmail.com",
+      "email_verified": false,
+      "full_name": "Test User",
+      "phone_verified": false,
+      "sub": "dee89266-5154-41f0-9aa6-337cd1f5f697"
+    },
+    "identities": [
+      {
+        "identity_id": "284879d3-0f55-454b-b170-b62955d5155e",
+        "id": "dee89266-5154-41f0-9aa6-337cd1f5f697",
+        "user_id": "dee89266-5154-41f0-9aa6-337cd1f5f697",
+        "identity_data": {
+          "email": "test123@gmail.com",
+          "email_verified": false,
+          "full_name": "Test User",
+          "phone_verified": false,
+          "sub": "dee89266-5154-41f0-9aa6-337cd1f5f697"
+        },
+        "provider": "email",
+        "last_sign_in_at": "2025-04-16T23:05:39.996065576Z",
+        "created_at": "2025-04-16T23:05:39.996112Z",
+        "updated_at": "2025-04-16T23:05:39.996112Z",
+        "email": "test123@gmail.com"
+      }
+    ],
+    "created_at": "2025-04-16T23:05:39.988863Z",
+    "updated_at": "2025-04-16T23:05:40.299566Z",
+    "is_anonymous": false
+  },
+  "session": null
+}
+6. Auth response: Received auth data No error
+9. Auth user created: dee89266-5154-41f0-9aa6-337cd1f5f697
+10. Creating user profile...
+11. Profile creation response: Profile created
+13. Profile created successfully
+14. Sending response: {
+  success: true,
+  message: 'Signup successful',
+  requiresEmailConfirmation: false,
+  user: {
+    email: 'test123@gmail.com',
+    id: 'dee89266-5154-41f0-9aa6-337cd1f5f697'
+  }
+}
+=== END SIGNUP REQUEST ===

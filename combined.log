@@ -1,0 +1,16 @@
+{"level":"info","message":"Initializing Supabase client with URL:","timestamp":"2025-04-20T18:37:37.631Z"}
+{"level":"info","message":"Server running on port 3000 in development mode","timestamp":"2025-04-20T18:37:37.652Z"}
+{"level":"info","message":"SIGINT signal received. Closing HTTP server...","timestamp":"2025-04-20T18:39:47.509Z"}
+{"level":"info","message":"Initializing Supabase client with URL:","timestamp":"2025-04-20T18:40:48.876Z"}
+{"level":"info","message":"Server running on port 5500 in development mode","timestamp":"2025-04-20T18:40:48.893Z"}
+{"level":"info","message":"SIGINT signal received. Closing HTTP server...","timestamp":"2025-04-20T18:43:32.772Z"}
+{"level":"error","message":"Could not close connections in time, forcefully shutting down","timestamp":"2025-04-20T18:43:42.788Z"}
+{"level":"info","message":"Initializing Supabase client with URL:","timestamp":"2025-04-20T18:43:56.126Z"}
+{"level":"info","message":"Server running on port 5500 in development mode","timestamp":"2025-04-20T18:43:56.148Z"}
+{"level":"info","message":"Testing Supabase connection...","timestamp":"2025-04-20T18:43:56.748Z"}
+{"level":"info","message":"Supabase connection test successful (0ms)","timestamp":"2025-04-20T18:43:56.749Z"}
+{"level":"info","message":"Initializing Supabase client with URL:","timestamp":"2025-04-20T18:56:49.084Z"}
+{"level":"info","message":"Server running on port 3000 in development mode","timestamp":"2025-04-20T18:56:49.101Z"}
+{"level":"info","message":"Initializing Supabase client with URL:","timestamp":"2025-04-20T19:10:22.351Z"}
+{"level":"info","message":"Server is running on port 3000","timestamp":"2025-04-20T19:10:22.371Z"}
+{"level":"info","message":"Access the application at http://localhost:3000","timestamp":"2025-04-20T19:10:22.373Z"}

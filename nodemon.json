@@ -1,12 +1,9 @@
 {
-    "verbose": true,
-    "ignore": ["*.test.js", "*.spec.js", "node_modules/*"],
-    "execMap": {
-        "js": "node"
-    },
-    "watch": ["*.js", ".env"],
-    "env": {
-        "NODE_ENV": "development"
-    },
-    "ext": "js,json,env"
-} 
+  "watch": ["server.js", "api/", ".env"],
+  "ignore": ["node_modules/", "*.test.js"],
+  "ext": "js,json,env",
+  "env": {
+    "NODE_ENV": "development"
+  },
+  "delay": "1000"
+}

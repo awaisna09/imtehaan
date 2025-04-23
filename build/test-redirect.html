@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Redirect Test</title>
+    <style>
+      body {
+        font-family: 'Poppins', Arial, sans-serif;
+        background-color: #f5f5f5;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0;
+        padding: 20px;
+        box-sizing: border-box;
+      }
+      .test-container {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        padding: 30px;
+        width: 100%;
+        max-width: 500px;
+      }
+      h1 {
+        color: #333;
+        margin-top: 0;
+        text-align: center;
+      }
+      .test-btn {
+        background-color: #4a90e2;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        width: 100%;
+        margin: 10px 0;
+      }
+      .test-btn:hover {
+        background-color: #3a7fcb;
+      }
+      .result {
+        margin-top: 20px;
+        padding: 15px;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+      .success {
+        background-color: rgba(0, 196, 111, 0.1);
+        color: #00c46f;
+      }
+      .info {
+        background-color: rgba(74, 144, 226, 0.1);
+        color: #4a90e2;
+      }
+      .debug-info {
+        margin-top: 20px;
+        padding: 15px;
+        border-radius: 4px;
+        background-color: #f9f9f9;
+      }
+      pre {
+        white-space: pre-wrap;
+        word-break: break-all;
+        background-color: #f5f5f5;
+        padding: 10px;
+        border-radius: 4px;
+        margin: 10px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="test-container">
+      <h1>Redirect Test</h1>
+      <p>
+        This page tests redirection functionality that should happen after
+        successful signup.
+      </p>
+
+      <button id="simpleLinkBtn" class="test-btn">Test Simple Link</button>
+      <button id="timeoutBtn" class="test-btn">Test setTimeout Redirect</button>
+      <button id="locationReplaceBtn" class="test-btn">
+        Test location.replace
+      </button>
+      <button id="windowOpenBtn" class="test-btn">Test window.open</button>
+
+      <div id="result" class="result info">
+        Click a button to test redirection
+      </div>
+
+      <div class="debug-info">
+        <h3>Current URL Information:</h3>
+        <pre id="urlInfo"></pre>
+      </div>
+    </div>
+
+    <script>
+      // Display URL info
+      const urlInfo = document.getElementById('urlInfo');
+      urlInfo.textContent = `
+Location: ${window.location.href}
+Protocol: ${window.location.protocol}
+Host: ${window.location.host}
+Pathname: ${window.location.pathname}
+Directory: ${window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'))}
+`;
+
+      // Result element
+      const result = document.getElementById('result');
+
+      // Simple link test
+      document.getElementById('simpleLinkBtn').addEventListener('click', () => {
+        result.className = 'result info';
+        result.innerHTML =
+          'Testing simple link redirect...<br>Will redirect in 2 seconds';
+        console.log('Testing simple link redirect to login.html');
+
+        setTimeout(() => {
+          window.location.href = 'login.html';
+        }, 2000);
+      });
+
+      // Timeout test
+      document.getElementById('timeoutBtn').addEventListener('click', () => {
+        result.className = 'result info';
+        result.innerHTML =
+          'Testing setTimeout redirect with timestamp...<br>Will redirect in 2 seconds';
+        console.log('Testing setTimeout redirect to login.html with timestamp');
+
+        setTimeout(() => {
+          window.location.href = 'login.html?t=' + Date.now();
+        }, 2000);
+      });
+
+      // Location replace test
+      document
+        .getElementById('locationReplaceBtn')
+        .addEventListener('click', () => {
+          result.className = 'result info';
+          result.innerHTML =
+            'Testing location.replace redirect...<br>Will redirect in 2 seconds';
+          console.log('Testing location.replace redirect to login.html');
+
+          setTimeout(() => {
+            window.location.replace('login.html');
+          }, 2000);
+        });
+
+      // Window open test
+      document.getElementById('windowOpenBtn').addEventListener('click', () => {
+        result.className = 'result info';
+        result.innerHTML =
+          'Testing window.open redirect...<br>Will open in 2 seconds';
+        console.log('Testing window.open redirect to login.html');
+
+        setTimeout(() => {
+          window.open('login.html', '_self');
+        }, 2000);
+      });
+    </script>
+  </body>
+</html>
