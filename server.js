@@ -380,7 +380,7 @@ process.on('SIGTERM', () => {
   logger.info('SIGTERM received. Shutting down gracefully...');
   server.close(() => {
     logger.info('Server closed');
-    process.exit(0);
+  process.exit(0);
   });
 });
 
