@@ -1,71 +1,133 @@
+// Study Timer functionality
 export class StudyTimer {
   constructor() {
-    (this.startTime = null),
-      (this.elapsedTime = 0),
-      (this.isRunning = !1),
-      (this.timerInterval = null),
-      (this.dailyGoal = 60),
-      (this.today = new Date().toISOString().split('T')[0]),
-      this.initializeTimer(),
-      this.start();
+    this.startTime = null;
+    this.elapsedTime = 0;
+    this.isRunning = false;
+    this.timerInterval = null;
+    this.dailyGoal = 60; // Default 60 minutes
+    this.today = new Date().toISOString().split('T')[0];
+    this.initializeTimer();
+    this.start(); // Automatically start the timer
   }
+
   initializeTimer() {
-    const t = localStorage.getItem('timerData');
-    if (t) {
-      const { elapsedTime: e, lastDate: a } = JSON.parse(t);
-      a === this.today && (this.elapsedTime = e);
+    // Load saved timer data from localStorage
+    const savedTimerData = localStorage.getItem('timerData');
+    if (savedTimerData) {
+      const { elapsedTime, lastDate } = JSON.parse(savedTimerData);
+      if (lastDate === this.today) {
+        this.elapsedTime = elapsedTime;
+      }
     }
-    const e = localStorage.getItem('studyTime');
-    e && (this.dailyGoal = parseInt(e)), this.updateDisplay();
+
+    // Load daily goal from localStorage
+    const savedGoal = localStorage.getItem('studyTime');
+    if (savedGoal) {
+      this.dailyGoal = parseInt(savedGoal);
+    }
+
+    // Update the display
+    this.updateDisplay();
   }
+
   start() {
-    this.isRunning ||
-      ((this.startTime = Date.now() - this.elapsedTime),
-      (this.isRunning = !0),
-      (this.timerInterval = setInterval(() => this.update(), 1e3)),
-      this.saveTimerData());
-  }
-  stop() {
-    this.isRunning &&
-      (clearInterval(this.timerInterval),
-      (this.isRunning = !1),
-      this.saveTimerData());
-  }
-  update() {
-    (this.elapsedTime = Date.now() - this.startTime),
-      this.updateDisplay(),
+    if (!this.isRunning) {
+      this.startTime = Date.now() - this.elapsedTime;
+      this.isRunning = true;
+      this.timerInterval = setInterval(() => this.update(), 1000);
       this.saveTimerData();
-  }
-  updateDisplay() {
-    const t = Math.floor(this.elapsedTime / 6e4),
-      e = Math.floor((this.elapsedTime % 6e4) / 1e3),
-      a = document.getElementById('timerDisplay');
-    a &&
-      (a.textContent = `${t.toString().padStart(2, '0')}:${e.toString().padStart(2, '0')}`);
-    const i = document.querySelector('#studyProgress .progress-fill'),
-      s = document.querySelector('#studyProgress + .progress-text');
-    if (i && s) {
-      const e = Math.min((t / this.dailyGoal) * 100, 100);
-      (i.style.width = `${e}%`),
-        (s.textContent = `${t}/${this.dailyGoal} minutes`);
     }
-    this.updateChartData(t);
   }
+
+  stop() {
+    if (this.isRunning) {
+      clearInterval(this.timerInterval);
+      this.isRunning = false;
+      this.saveTimerData();
+    }
+  }
+
+  update() {
+    this.elapsedTime = Date.now() - this.startTime;
+    this.updateDisplay();
+    this.saveTimerData();
+  }
+
+  updateDisplay() {
+    const minutes = Math.floor(this.elapsedTime / 60000);
+    const seconds = Math.floor((this.elapsedTime % 60000) / 1000);
+
+    // Update the timer display
+    const timerDisplay = document.getElementById('timerDisplay');
+    if (timerDisplay) {
+      timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    // Update the progress bar
+    const progressFill = document.querySelector(
+      '#studyProgress .progress-fill'
+    );
+    const progressText = document.querySelector(
+      '#studyProgress + .progress-text'
+    );
+    if (progressFill && progressText) {
+      const progressPercentage = Math.min(
+        (minutes / this.dailyGoal) * 100,
+        100
+      );
+      progressFill.style.width = `${progressPercentage}%`;
+      progressText.textContent = `${minutes}/${this.dailyGoal} minutes`;
+    }
+
+    // Update the chart data
+    this.updateChartData(minutes);
+  }
+
   saveTimerData() {
-    const t = { elapsedTime: this.elapsedTime, lastDate: this.today };
-    localStorage.setItem('timerData', JSON.stringify(t));
+    const timerData = {
+      elapsedTime: this.elapsedTime,
+      lastDate: this.today,
+    };
+    localStorage.setItem('timerData', JSON.stringify(timerData));
   }
-  updateChartData(t) {
-    let e = JSON.parse(localStorage.getItem('studyChartData') || '[]');
-    const a = e.findIndex((t) => t.date === this.today);
-    -1 === a ? e.push({ date: this.today, minutes: t }) : (e[a].minutes = t),
-      e.length > 7 && (e = e.slice(-7)),
-      localStorage.setItem('studyChartData', JSON.stringify(e));
+
+  updateChartData(minutes) {
+    // Get existing chart data
+    let chartData = JSON.parse(localStorage.getItem('studyChartData') || '[]');
+
+    // Find today's entry
+    const todayIndex = chartData.findIndex(
+      (entry) => entry.date === this.today
+    );
+
+    if (todayIndex === -1) {
+      // Add new entry for today
+      chartData.push({
+        date: this.today,
+        minutes: minutes,
+      });
+    } else {
+      // Update today's entry
+      chartData[todayIndex].minutes = minutes;
+    }
+
+    // Keep only last 7 days
+    if (chartData.length > 7) {
+      chartData = chartData.slice(-7);
+    }
+
+    localStorage.setItem('studyChartData', JSON.stringify(chartData));
   }
-  setDailyGoal(t) {
-    (this.dailyGoal = t), this.updateDisplay();
+
+  setDailyGoal(minutes) {
+    this.dailyGoal = minutes;
+    this.updateDisplay();
   }
+
+  // Save timer state before page unload
   saveState() {
-    this.stop(), this.saveTimerData();
+    this.stop();
+    this.saveTimerData();
   }
 }

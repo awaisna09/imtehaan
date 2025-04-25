@@ -1,83 +1,138 @@
+// Import Supabase client from config
 import { supabase } from './supabase-config.js';
+
+// Initialize page elements
 const initializeScorePage = () => {
-  document.querySelector('.home-btn').addEventListener('click', () => {
+  // Home button functionality
+  const homeBtn = document.querySelector('.home-btn');
+  homeBtn.addEventListener('click', () => {
     window.location.href = 'index.html';
   });
-  const e = document.querySelector('.submit-btn'),
-    t = document.querySelector('.form-section'),
-    n = document.querySelector('.loading-spinner'),
-    a = document.querySelector('.status-message'),
-    o = t.querySelectorAll('.form-input, .form-textarea'),
-    r = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e),
-    i = (e) => /^[+]?[0-9]{10,}$/.test(e.replace(/[\s-]/g, ''));
-  e.addEventListener('click', async () => {
+
+  // Form elements
+  const submitBtn = document.querySelector('.submit-btn');
+  const formSection = document.querySelector('.form-section');
+  const loadingSpinner = document.querySelector('.loading-spinner');
+  const statusMessage = document.querySelector('.status-message');
+  const inputs = formSection.querySelectorAll('.form-input, .form-textarea');
+
+  // Form validation
+  const validateForm = () => {
+    let isValid = true;
+    inputs.forEach((input) => {
+      const validationMessage = input.nextElementSibling;
+      if (!input.value.trim()) {
+        validationMessage.textContent = 'This field is required';
+        isValid = false;
+      } else if (input.type === 'email' && !validateEmail(input.value)) {
+        validationMessage.textContent = 'Please enter a valid email';
+        isValid = false;
+      } else if (input.id === 'contact' && !validatePhone(input.value)) {
+        validationMessage.textContent = 'Please enter a valid phone number';
+        isValid = false;
+      } else {
+        validationMessage.textContent = '';
+      }
+    });
+    return isValid;
+  };
+
+  // Email validation
+  const validateEmail = (email) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
+  // Phone validation
+  const validatePhone = (phone) => {
+    return /^[+]?[0-9]{10,}$/.test(phone.replace(/[\s-]/g, ''));
+  };
+
+  // Form submission handler
+  submitBtn.addEventListener('click', async () => {
     try {
-      if (
-        !(() => {
-          let e = !0;
-          return (
-            o.forEach((t) => {
-              const n = t.nextElementSibling;
-              t.value.trim()
-                ? 'email' !== t.type || r(t.value)
-                  ? 'contact' !== t.id || i(t.value)
-                    ? (n.textContent = '')
-                    : ((n.textContent = 'Please enter a valid phone number'),
-                      (e = !1))
-                  : ((n.textContent = 'Please enter a valid email'), (e = !1))
-                : ((n.textContent = 'This field is required'), (e = !1));
-            }),
-            e
-          );
-        })()
-      )
+      if (!validateForm()) {
         return;
-      if (!navigator.onLine) throw new Error('No internet connection');
-      n.classList.remove('hidden'),
-        (a.textContent = 'Submitting...'),
-        (a.style.color = '#00E67F');
-      const t = document.getElementById('firstName').value,
-        c = document.getElementById('lastName').value,
-        s = document.getElementById('email').value,
-        l = document.getElementById('contact').value,
-        d = document.getElementById('message').value;
-      (e.disabled = !0), (e.textContent = 'Submitting...');
-      const { data: m, error: u } = await supabase
+      }
+
+      // Check internet connection
+      if (!navigator.onLine) {
+        throw new Error('No internet connection');
+      }
+
+      // Show loading state
+      loadingSpinner.classList.remove('hidden');
+      statusMessage.textContent = 'Submitting...';
+      statusMessage.style.color = '#00E67F';
+
+      // Get form values
+      const firstName = document.getElementById('firstName').value;
+      const lastName = document.getElementById('lastName').value;
+      const email = document.getElementById('email').value;
+      const contact = document.getElementById('contact').value;
+      const remark = document.getElementById('message').value;
+
+      // Disable submit button while processing
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting...';
+
+      // Test connection first
+      const { data: testData, error: testError } = await supabase
         .from('recommendations')
         .select('count')
         .limit(1);
-      if (u) throw new Error('Unable to connect to the database');
-      const { data: y, error: f } = await supabase
+
+      if (testError) {
+        console.error('Connection test failed:', testError);
+        throw new Error('Unable to connect to the database');
+      }
+
+      // Insert data
+      const { data, error } = await supabase
         .from('recommendations')
         .insert({
-          first_name: t,
-          last_name: c,
-          email: s,
-          contact: l,
-          remarks: d,
+          first_name: firstName,
+          last_name: lastName,
+          email: email,
+          contact: contact,
+          remarks: remark,
         })
         .select();
-      if (f) throw f;
-      n.classList.add('hidden'),
-        (a.textContent = 'Thank you for your feedback!'),
-        (a.style.color = '#00E67F'),
-        o.forEach((e) => (e.value = '')),
-        document
-          .querySelectorAll('.validation-message')
-          .forEach((e) => (e.textContent = ''));
-    } catch (e) {
-      n.classList.add('hidden'),
-        (a.style.color = '#ff4444'),
-        'No internet connection' === e.message
-          ? (a.textContent =
-              'Please check your internet connection and try again.')
-          : 'Unable to connect to the database' === e.message
-            ? (a.textContent =
-                'Unable to connect to the database. Please try again later.')
-            : (a.textContent = 'An error occurred. Please try again.');
+
+      if (error) {
+        console.error('Insert error:', error);
+        throw error;
+      }
+
+      // Success state
+      loadingSpinner.classList.add('hidden');
+      statusMessage.textContent = 'Thank you for your feedback!';
+      statusMessage.style.color = '#00E67F';
+
+      // Clear form inputs and validation messages
+      inputs.forEach((input) => (input.value = ''));
+      document
+        .querySelectorAll('.validation-message')
+        .forEach((msg) => (msg.textContent = ''));
+    } catch (error) {
+      console.error('Error:', error);
+      loadingSpinner.classList.add('hidden');
+      statusMessage.style.color = '#ff4444';
+      if (error.message === 'No internet connection') {
+        statusMessage.textContent =
+          'Please check your internet connection and try again.';
+      } else if (error.message === 'Unable to connect to the database') {
+        statusMessage.textContent =
+          'Unable to connect to the database. Please try again later.';
+      } else {
+        statusMessage.textContent = 'An error occurred. Please try again.';
+      }
     } finally {
-      (e.disabled = !1), (e.textContent = 'SUBMIT');
+      // Re-enable submit button
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'SUBMIT';
     }
   });
 };
+
+// Initialize when the page loads
 document.addEventListener('DOMContentLoaded', initializeScorePage);

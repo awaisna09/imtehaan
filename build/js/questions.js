@@ -1,437 +1,844 @@
-const supabaseUrl = 'https://mwhtclxabiraowerfmkz.supabase.co',
-  supabaseKey =
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im13aHRjbHhhYmlyYW93ZXJmbWt6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA3MDY2MjksImV4cCI6MjA1NjI4MjYyOX0.jwnn4sR78xx08p-8V8d-gSU9EHCjPPnT376Vt9KDO3Q',
-  QUESTIONS_WEBHOOK_URL =
-    'https://imtehanh.app.n8n.cloud/webhook/62085562-ce3e-4f5a-bae0-5e52e83b3eb8/chat',
-  REQUEST_TIMEOUT = 3e4,
-  MAX_RETRIES = 3;
+// Initialize Supabase client
+const supabaseUrl = 'https://mwhtclxabiraowerfmkz.supabase.co';
+const supabaseKey =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im13aHRjbHhhYmlyYW93ZXJmbWt6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA3MDY2MjksImV4cCI6MjA1NjI4MjYyOX0.jwnn4sR78xx08p-8V8d-gSU9EHCjPPnT376Vt9KDO3Q';
+
+// Webhook configuration
+const QUESTIONS_WEBHOOK_URL =
+  'https://imtehanh.app.n8n.cloud/webhook/62085562-ce3e-4f5a-bae0-5e52e83b3eb8/chat';
+const REQUEST_TIMEOUT = 30000; // 30 seconds
+const MAX_RETRIES = 3;
+
+// Initialize Supabase client with error handling
 let supabase;
 try {
   supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-} catch (e) {}
-function isValidWebhookUrl(e) {
+  console.log('Supabase client initialized successfully');
+} catch (error) {
+  console.error('Error initializing Supabase client:', error);
+}
+
+// Validate webhook URL
+function isValidWebhookUrl(url) {
   try {
-    const t = new URL(e);
-    return 'https:' === t.protocol && t.hostname.includes('n8n.cloud');
+    const parsedUrl = new URL(url);
+    return (
+      parsedUrl.protocol === 'https:' &&
+      parsedUrl.hostname.includes('n8n.cloud')
+    );
   } catch (e) {
-    return !1;
+    console.error('Invalid webhook URL:', e);
+    return false;
   }
 }
+
+// Test webhook connection
 async function testWebhook() {
+  console.log('Testing webhook connection...');
+
   try {
-    if (!isValidWebhookUrl(QUESTIONS_WEBHOOK_URL)) return !1;
-    const e = 'Connection test',
-      t = {
-        sessionId: generateSessionId(),
-        chatInput: e,
-        context: { test: !0, timestamp: new Date().toISOString() },
-      },
-      n = await fetch(QUESTIONS_WEBHOOK_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify(t),
-        signal: AbortSignal.timeout(3e4),
-      });
-    if (!n.ok) throw new Error(`Server responded with status ${n.status}`);
-    try {
-      await n.json();
-      return !0;
-    } catch (e) {
-      await n.text();
-      return !0;
+    // Validate webhook URL first
+    if (!isValidWebhookUrl(QUESTIONS_WEBHOOK_URL)) {
+      console.error('Invalid webhook URL:', QUESTIONS_WEBHOOK_URL);
+      return false;
     }
-  } catch (e) {
-    return !1;
+
+    const testMessage = 'Connection test';
+    const payload = {
+      sessionId: generateSessionId(),
+      chatInput: testMessage,
+      context: {
+        test: true,
+        timestamp: new Date().toISOString(),
+      },
+    };
+
+    console.log('Sending test payload:', payload);
+
+    const response = await fetch(QUESTIONS_WEBHOOK_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Server responded with status ${response.status}`);
+    }
+
+    // Try to parse as JSON first
+    try {
+      const responseData = await response.json();
+      console.log('Webhook test response:', responseData);
+      return true;
+    } catch (e) {
+      // If not JSON, try text
+      const responseText = await response.text();
+      console.log('Webhook test response (text):', responseText);
+      return true;
+    }
+  } catch (error) {
+    console.error('Webhook test failed:', error);
+    return false;
   }
 }
+
+// Generate a unique session ID
 function generateSessionId() {
   return (
     'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
   );
 }
-let chapterNameElement,
-  sidebarTopicsList,
-  questionsBox,
-  answerBox,
-  noteText,
-  detailedNotesText,
-  allChapters = [],
-  currentChapterIndex = -1,
-  currentChapterId = null,
-  currentQuestionIndex = 0,
-  currentQuestions = [],
-  currentSessionId = generateSessionId();
+
+// State management
+let allChapters = [];
+let currentChapterIndex = -1;
+let currentChapterId = null;
+let currentQuestionIndex = 0;
+let currentQuestions = [];
+
+// DOM elements
+let chapterNameElement;
+let sidebarTopicsList;
+let questionsBox;
+let answerBox;
+let noteText;
+let detailedNotesText;
+
+// Chat message handling
+let currentSessionId = generateSessionId();
+
+// Import notes functionality
 import { initializeNotesPopup } from './notes.js';
+
+// Function to initialize DOM elements
 function initializeDOMElements() {
-  if (
-    ((chapterNameElement = document.querySelector('.chapter-name')),
-    (sidebarTopicsList = document.querySelector('.topics-list')),
-    (questionsBox = document.querySelector('.questions-box')),
-    (answerBox = document.querySelector('.answer-box')),
-    (noteText = document.querySelector('.quick-notes')),
-    (detailedNotesText = document.querySelector('.detailed-notes')),
-    questionsBox)
-  ) {
+  console.log('Initializing DOM elements');
+
+  // Get all required elements
+  chapterNameElement = document.querySelector('.chapter-name');
+  sidebarTopicsList = document.querySelector('.topics-list');
+  questionsBox = document.querySelector('.questions-box');
+  answerBox = document.querySelector('.answer-box');
+  noteText = document.querySelector('.quick-notes');
+  detailedNotesText = document.querySelector('.detailed-notes');
+
+  // Log the found elements
+  console.log('Found elements:', {
+    chapterNameElement: !!chapterNameElement,
+    sidebarTopicsList: !!sidebarTopicsList,
+    questionsBox: !!questionsBox,
+    answerBox: !!answerBox,
+    noteText: !!noteText,
+    detailedNotesText: !!detailedNotesText,
+  });
+
+  // Ensure questions box has the required structure
+  if (questionsBox) {
+    // Clear any existing loading/error messages
     questionsBox.innerHTML = '';
-    const e = document.createElement('div');
-    e.className = 'question-content';
-    const t = document.createElement('div');
-    (t.className = 'question-statement'),
-      e.appendChild(t),
-      questionsBox.appendChild(e);
+
+    const questionContent = document.createElement('div');
+    questionContent.className = 'question-content';
+
+    const statementElement = document.createElement('div');
+    statementElement.className = 'question-statement';
+
+    questionContent.appendChild(statementElement);
+    questionsBox.appendChild(questionContent);
   }
+
+  // Ensure answer box has the required structure
   if (answerBox) {
+    // Clear any existing loading/error messages
     answerBox.innerHTML = '';
-    const e = document.createElement('div');
-    (e.className = 'answer-content'), answerBox.appendChild(e);
+
+    const answerContent = document.createElement('div');
+    answerContent.className = 'answer-content';
+    answerBox.appendChild(answerContent);
   }
+
+  // Initialize notes popup
   initializeNotesPopup();
 }
+
+// Function to load all chapters
 async function loadChapters() {
   try {
-    if (!supabase) throw new Error('Supabase client not initialized');
-    if ((initializeDOMElements(), !chapterNameElement || !sidebarTopicsList))
+    console.log('Starting loadChapters...');
+
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+
+    initializeDOMElements();
+
+    if (!chapterNameElement || !sidebarTopicsList) {
+      console.error('Required DOM elements not found');
       return;
-    const { data: e, error: t } = await supabase
+    }
+
+    // Fetch unique chapter_id and chapter_name from topical_questions table
+    console.log('Fetching chapters from topical_questions table...');
+    const { data: questions, error } = await supabase
       .from('topical_questions')
       .select('chapter_id, chapter_name')
       .order('chapter_name');
-    if (t) throw t;
-    if (!e || 0 === e.length) throw new Error('No chapters found');
-    const n = [],
-      s = new Set();
-    e.forEach((e) => {
-      s.has(e.chapter_id) ||
-        (s.add(e.chapter_id),
-        n.push({ id: e.chapter_id, name: e.chapter_name }));
-    }),
-      (allChapters = Array.from(n).sort((e, t) =>
-        e.name.localeCompare(t.name)
-      ));
-    const a = new URLSearchParams(window.location.search).get('chapter');
-    a
-      ? ((currentChapterIndex = allChapters.findIndex((e) => e.name === a)),
-        -1 === currentChapterIndex && (currentChapterIndex = 0))
-      : (currentChapterIndex = 0),
-      updateNavigationButtons();
-    const o = allChapters[currentChapterIndex];
-    (currentChapterId = o.id), (chapterNameElement.textContent = o.name);
-    const r = new URL(window.location.href);
-    r.searchParams.set('chapter', o.name),
-      window.history.pushState({}, '', r),
-      await loadQuestionsByChapterId(currentChapterId),
-      await loadRelatedTopics();
-  } catch (e) {
-    chapterNameElement &&
-      (chapterNameElement.textContent = 'Error loading chapters'),
-      sidebarTopicsList &&
-        (sidebarTopicsList.innerHTML =
-          '<div class="error-message">Error loading chapters</div>');
+
+    if (error) {
+      console.error('Error fetching chapters:', error);
+      throw error;
+    }
+
+    console.log('Raw chapter data:', questions);
+
+    if (!questions || questions.length === 0) {
+      console.error('No chapters found in database');
+      throw new Error('No chapters found');
+    }
+
+    // Get unique chapters with their IDs
+    const uniqueChapters = [];
+    const seenIds = new Set();
+
+    questions.forEach((q) => {
+      if (!seenIds.has(q.chapter_id)) {
+        seenIds.add(q.chapter_id);
+        uniqueChapters.push({
+          id: q.chapter_id,
+          name: q.chapter_name,
+        });
+      }
+    });
+
+    console.log('Unique chapters:', uniqueChapters);
+
+    // Sort chapters by name and ensure it's an array
+    allChapters = Array.from(uniqueChapters).sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+    console.log('All chapters set:', allChapters);
+
+    // Get URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const chapterName = urlParams.get('chapter');
+    console.log('URL chapter name:', chapterName);
+
+    // If we have a chapter name from URL, use it, otherwise use the first chapter
+    if (chapterName) {
+      currentChapterIndex = allChapters.findIndex(
+        (ch) => ch.name === chapterName
+      );
+      if (currentChapterIndex === -1) {
+        currentChapterIndex = 0;
+      }
+    } else {
+      currentChapterIndex = 0;
+    }
+
+    console.log('Current chapter index:', currentChapterIndex);
+
+    // Update navigation buttons state
+    updateNavigationButtons();
+
+    // Load the current chapter
+    const currentChapter = allChapters[currentChapterIndex];
+    currentChapterId = currentChapter.id;
+
+    console.log('Setting chapter name to:', currentChapter.name);
+    chapterNameElement.textContent = currentChapter.name;
+
+    // Update URL with current chapter
+    const newUrl = new URL(window.location.href);
+    newUrl.searchParams.set('chapter', currentChapter.name);
+    window.history.pushState({}, '', newUrl);
+
+    // Load questions for the current chapter
+    await loadQuestionsByChapterId(currentChapterId);
+
+    // Load the chapter list
+    await loadRelatedTopics();
+  } catch (error) {
+    console.error('Error in loadChapters:', error);
+    if (chapterNameElement) {
+      chapterNameElement.textContent = 'Error loading chapters';
+    }
+    if (sidebarTopicsList) {
+      sidebarTopicsList.innerHTML =
+        '<div class="error-message">Error loading chapters</div>';
+    }
   }
 }
+
+// Function to update navigation buttons state
 function updateNavigationButtons() {
-  const e = document.querySelector('.nav-btn.prev'),
-    t = document.querySelector('.nav-btn.next');
-  e &&
-    ((e.disabled = currentQuestionIndex <= 0),
-    (e.style.opacity = currentQuestionIndex <= 0 ? '0.5' : '1'),
-    (e.onclick = goToPreviousQuestion)),
-    t &&
-      ((t.disabled = currentQuestionIndex >= currentQuestions.length - 1),
-      (t.style.opacity =
-        currentQuestionIndex >= currentQuestions.length - 1 ? '0.5' : '1'),
-      (t.onclick = goToNextQuestion));
+  const prevBtn = document.querySelector('.nav-btn.prev');
+  const nextBtn = document.querySelector('.nav-btn.next');
+
+  if (prevBtn) {
+    prevBtn.disabled = currentQuestionIndex <= 0;
+    prevBtn.style.opacity = currentQuestionIndex <= 0 ? '0.5' : '1';
+    prevBtn.onclick = goToPreviousQuestion;
+  }
+
+  if (nextBtn) {
+    nextBtn.disabled = currentQuestionIndex >= currentQuestions.length - 1;
+    nextBtn.style.opacity =
+      currentQuestionIndex >= currentQuestions.length - 1 ? '0.5' : '1';
+    nextBtn.onclick = goToNextQuestion;
+  }
 }
+
+// Function to navigate to next question
 function goToNextQuestion() {
-  currentQuestionIndex < currentQuestions.length - 1 &&
-    (currentQuestionIndex++,
-    displayQuestion(currentQuestionIndex),
-    updateNavigationButtons());
+  if (currentQuestionIndex < currentQuestions.length - 1) {
+    currentQuestionIndex++;
+    displayQuestion(currentQuestionIndex);
+    updateNavigationButtons();
+  }
 }
+
+// Function to navigate to previous question
 function goToPreviousQuestion() {
-  currentQuestionIndex > 0 &&
-    (currentQuestionIndex--,
-    displayQuestion(currentQuestionIndex),
-    updateNavigationButtons());
+  if (currentQuestionIndex > 0) {
+    currentQuestionIndex--;
+    displayQuestion(currentQuestionIndex);
+    updateNavigationButtons();
+  }
 }
-function displayQuestion(e) {
-  if (!currentQuestions || !currentQuestions[e]) return;
-  const t = currentQuestions[e],
-    n = t.statement || 'No statement available',
-    s = t.questions || 'No question available',
-    a = t.marks || 'N/A';
-  if (
-    !questionsBox &&
-    ((questionsBox = document.querySelector('.questions-box')), !questionsBox)
-  )
+
+// Function to display the current question
+function displayQuestion(index) {
+  console.log('Displaying question at index:', index);
+
+  if (!currentQuestions || !currentQuestions[index]) {
+    console.error('No question found at index:', index);
     return;
-  if (
-    !answerBox &&
-    ((answerBox = document.querySelector('.answer-box')), !answerBox)
-  )
-    return;
-  questionsBox.querySelector('.question-content') ||
-    (questionsBox.innerHTML =
-      '\n            <div class="question-content">\n                <div class="question-statement"></div>\n            </div>\n        ');
-  const o = questionsBox.querySelector('.question-statement');
-  if (
-    (o &&
-      ((o.innerHTML = n),
-      (o.style.color = '#fff'),
-      (o.style.display = 'block')),
-    answerBox.querySelector('.answer-content'))
-  ) {
-    const e =
+  }
+
+  const question = currentQuestions[index];
+  console.log('Question data:', question);
+
+  // Get the statement and question text
+  const statement = question.statement || 'No statement available';
+  const questionText = question.questions || 'No question available';
+  const marks = question.marks || 'N/A';
+
+  // Initialize elements if they don't exist
+  if (!questionsBox) {
+    questionsBox = document.querySelector('.questions-box');
+    if (!questionsBox) {
+      console.error('Questions box not found in DOM');
+      return;
+    }
+  }
+
+  if (!answerBox) {
+    answerBox = document.querySelector('.answer-box');
+    if (!answerBox) {
+      console.error('Answer box not found in DOM');
+      return;
+    }
+  }
+
+  // Ensure the questions box has the correct structure
+  if (!questionsBox.querySelector('.question-content')) {
+    questionsBox.innerHTML = `
+            <div class="question-content">
+                <div class="question-statement"></div>
+            </div>
+        `;
+  }
+
+  // Get or create question statement element
+  const questionStatement = questionsBox.querySelector('.question-statement');
+  if (questionStatement) {
+    questionStatement.innerHTML = statement;
+    questionStatement.style.color = '#fff';
+    questionStatement.style.display = 'block';
+  }
+
+  // Handle answer content
+  if (!answerBox.querySelector('.answer-content')) {
+    answerBox.innerHTML = `
+            <h3>Question</h3>
+            <div class="answer-content"></div>
+            <div class="marks-display">Marks: ${marks}</div>
+        `;
+  } else {
+    const marksDisplay =
       answerBox.querySelector('.marks-display') ||
       document.createElement('div');
-    (e.className = 'marks-display'),
-      (e.textContent = `Marks: ${a}`),
-      answerBox.querySelector('.marks-display') || answerBox.appendChild(e);
-  } else
-    answerBox.innerHTML = `\n            <h3>Question</h3>\n            <div class="answer-content"></div>\n            <div class="marks-display">Marks: ${a}</div>\n        `;
-  const r = answerBox.querySelector('.answer-content');
-  r && (r.textContent = s),
-    answerBox.addEventListener('click', () => {
-      const e = document.getElementById('message-input');
-      if (e) {
-        const t = `Statement: ${n}\nQuestion: ${s}`;
-        (e.value = t), e.focus();
-      }
-    }),
-    (questionsBox.style.display = 'block'),
-    (answerBox.style.display = 'block'),
-    updateNavigationButtons();
+    marksDisplay.className = 'marks-display';
+    marksDisplay.textContent = `Marks: ${marks}`;
+    if (!answerBox.querySelector('.marks-display')) {
+      answerBox.appendChild(marksDisplay);
+    }
+  }
+
+  const answerContent = answerBox.querySelector('.answer-content');
+  if (answerContent) {
+    answerContent.textContent = questionText;
+  }
+
+  // Add click handler to answer box
+  answerBox.addEventListener('click', () => {
+    const messageInput = document.getElementById('message-input');
+    if (messageInput) {
+      // Combine statement and question text
+      const combinedText = `Statement: ${statement}\nQuestion: ${questionText}`;
+      messageInput.value = combinedText;
+      messageInput.focus();
+    }
+  });
+
+  // Ensure visibility
+  questionsBox.style.display = 'block';
+  answerBox.style.display = 'block';
+
+  // Update navigation buttons
+  updateNavigationButtons();
 }
-async function loadQuestionsByChapterId(e) {
+
+// Function to load questions for a chapter
+async function loadQuestionsByChapterId(chapterId) {
   try {
-    (questionsBox && answerBox) || initializeDOMElements();
-    const t = questionsBox.querySelector('.question-statement');
-    t && (t.textContent = 'Loading questions...');
-    const { data: n, error: s } = await supabase
+    console.log('Loading questions for chapter_id:', chapterId);
+
+    // Initialize DOM elements if not already done
+    if (!questionsBox || !answerBox) {
+      initializeDOMElements();
+    }
+
+    // Show loading state in a way that preserves structure
+    const questionStatement = questionsBox.querySelector('.question-statement');
+    if (questionStatement) {
+      questionStatement.textContent = 'Loading questions...';
+    }
+
+    // Fetch questions
+    const { data: questionData, error } = await supabase
       .from('topical_questions')
       .select('chapter_id, statement, questions, marks')
-      .eq('chapter_id', e);
-    if (s) throw s;
-    if (!n || 0 === n.length) throw new Error('No questions found');
-    (currentQuestions = n), (currentQuestionIndex = 0), displayQuestion(0);
-  } catch (e) {
-    const t = questionsBox.querySelector('.question-statement');
-    t && (t.textContent = `Error: ${e.message}`);
+      .eq('chapter_id', chapterId);
+
+    if (error) throw error;
+
+    if (!questionData || questionData.length === 0) {
+      throw new Error('No questions found');
+    }
+
+    // Store questions and display first one
+    currentQuestions = questionData;
+    currentQuestionIndex = 0;
+    displayQuestion(0);
+  } catch (error) {
+    console.error('Error in loadQuestionsByChapterId:', error);
+    const questionStatement = questionsBox.querySelector('.question-statement');
+    if (questionStatement) {
+      questionStatement.textContent = `Error: ${error.message}`;
+    }
   } finally {
     updateNavigationButtons();
   }
 }
+
+// Function to load related topics
 async function loadRelatedTopics() {
   try {
-    if (!sidebarTopicsList) return;
-    if (((sidebarTopicsList.innerHTML = ''), !Array.isArray(allChapters)))
+    console.log('Starting loadRelatedTopics...');
+    console.log('Current chapters:', allChapters);
+
+    if (!sidebarTopicsList) {
+      console.error('sidebarTopicsList not found');
       return;
-    allChapters.forEach((e, t) => {
-      const n = document.createElement('div');
-      (n.className = 'topic-item'),
-        t === currentChapterIndex && n.classList.add('active'),
-        (n.innerHTML = `\n                <div class="topic-content">\n                    <div class="topic-name">${e.name}</div>\n                </div>\n            `),
-        n.addEventListener('click', () => {
-          sidebarTopicsList
-            .querySelectorAll('.topic-item')
-            .forEach((e) => e.classList.remove('active')),
-            n.classList.add('active'),
-            chapterNameElement && (chapterNameElement.textContent = e.name);
-          const t = new URL(window.location.href);
-          t.searchParams.set('chapter', e.name),
-            window.history.pushState({}, '', t),
-            (currentChapterIndex = allChapters.findIndex((t) => t.id === e.id)),
-            (currentChapterId = e.id),
-            loadQuestionsByChapterId(e.id);
-        }),
-        sidebarTopicsList.appendChild(n);
+    }
+
+    // Clear any existing topics
+    sidebarTopicsList.innerHTML = '';
+    console.log('Cleared existing topics');
+
+    // Ensure allChapters is an array
+    if (!Array.isArray(allChapters)) {
+      console.error('allChapters is not an array:', allChapters);
+      return;
+    }
+
+    // Display chapters and add click handlers
+    allChapters.forEach((chapter, index) => {
+      console.log('Creating element for chapter:', chapter);
+      const chapterElement = document.createElement('div');
+      chapterElement.className = 'topic-item';
+      if (index === currentChapterIndex) {
+        chapterElement.classList.add('active');
+      }
+      chapterElement.innerHTML = `
+                <div class="topic-content">
+                    <div class="topic-name">${chapter.name}</div>
+                </div>
+            `;
+
+      // Add click handler
+      chapterElement.addEventListener('click', () => {
+        console.log('Chapter clicked:', chapter.name);
+
+        // Remove active class from all chapter elements
+        const chapterElements =
+          sidebarTopicsList.querySelectorAll('.topic-item');
+        chapterElements.forEach((c) => c.classList.remove('active'));
+
+        // Add active class to clicked chapter
+        chapterElement.classList.add('active');
+
+        // Update the current chapter name display
+        if (chapterNameElement) {
+          chapterNameElement.textContent = chapter.name;
+        }
+
+        // Update URL with current chapter
+        const newUrl = new URL(window.location.href);
+        newUrl.searchParams.set('chapter', chapter.name);
+        window.history.pushState({}, '', newUrl);
+
+        // Update current chapter index and ID
+        currentChapterIndex = allChapters.findIndex((c) => c.id === chapter.id);
+        currentChapterId = chapter.id;
+
+        // Load questions for the new chapter
+        loadQuestionsByChapterId(chapter.id);
+      });
+
+      sidebarTopicsList.appendChild(chapterElement);
     });
-  } catch (e) {
-    sidebarTopicsList &&
-      (sidebarTopicsList.innerHTML =
-        '<div class="error-message">Error loading chapters</div>');
+
+    console.log('Finished loading topics');
+  } catch (error) {
+    console.error('Error in loadRelatedTopics:', error);
+    if (sidebarTopicsList) {
+      sidebarTopicsList.innerHTML =
+        '<div class="error-message">Error loading chapters</div>';
+    }
   }
 }
-function addMessageToChat(e, t) {
-  const n = document.getElementById('chat-container');
-  if (!n) return;
-  const s = document.createElement('div');
-  s.className = `chat-message ${t}-message`;
-  const a = formatMessageWithMarkdown(e);
-  (s.innerHTML = a), n.appendChild(s), (n.scrollTop = n.scrollHeight);
+
+// Function to add message to chat with markdown support
+function addMessageToChat(message, sender) {
+  const chatContainer = document.getElementById('chat-container');
+  if (!chatContainer) {
+    console.error('Chat container not found');
+    return;
+  }
+
+  const messageElement = document.createElement('div');
+  messageElement.className = `chat-message ${sender}-message`;
+
+  // Format the message with markdown
+  const formattedMessage = formatMessageWithMarkdown(message);
+  messageElement.innerHTML = formattedMessage;
+
+  chatContainer.appendChild(messageElement);
+  chatContainer.scrollTop = chatContainer.scrollHeight;
 }
-function formatMessageWithMarkdown(e) {
-  return (e = (e = (e = (e = (e = (e = (e = (e = (e = (e = (e = (e = (e = (e =
-    (e = e
-      .toString()
-      .replace(/^output:\s*/i, '')
-      .trim())
-      .replace(/^output\s*:/i, '')
-      .trim())
-    .replace(/^output/i, '')
-    .trim()).replace(/[{}]/g, '')).replace(/\\/g, '')).replace(
-    /"/g,
-    ''
-  )).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')).replace(
-    /\*(.*?)\*/g,
-    '<em>$1</em>'
-  )).replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')).replace(
-    /`([^`]+)`/g,
-    '<code>$1</code>'
-  )).replace(
+
+// Format message with markdown
+function formatMessageWithMarkdown(text) {
+  // Remove "output:" prefix and any leading/trailing whitespace
+  text = text
+    .toString()
+    .replace(/^output:\s*/i, '')
+    .trim();
+  text = text.replace(/^output\s*:/i, '').trim();
+  text = text.replace(/^output/i, '').trim();
+
+  // Remove curly braces, backslashes, and double quotes
+  text = text.replace(/[{}]/g, '');
+  text = text.replace(/\\/g, '');
+  text = text.replace(/"/g, '');
+
+  // Handle bold text
+  text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+  // Handle italic text
+  text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+  // Handle code blocks
+  text = text.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+
+  // Handle inline code
+  text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+  // Handle links
+  text = text.replace(
     /\[([^\]]+)\]\(([^)]+)\)/g,
     '<a href="$2" target="_blank">$1</a>'
-  )).replace(/^\s*[-*]\s+(.+)$/gm, '<li>$1</li>')).replace(
-    /(<li>.*<\/li>)/g,
-    '<ul>$1</ul>'
-  )).replace(/\n/g, '<br>')).replace(
-    /\|([^\n]+)\|\n\|([^\n]+)\|\n((?:\|[^\n]+\|\n?)+)/g,
-    (e, t, n, s) => {
-      const a = t.split('|').filter((e) => e.trim()),
-        o = s.split('\n').map((e) => e.split('|').filter((e) => e.trim()));
-      let r = '<table class="markdown-table"><thead><tr>';
-      return (
-        a.forEach((e) => {
-          r += `<th>${e.trim()}</th>`;
-        }),
-        (r += '</tr></thead><tbody>'),
-        o.forEach((e) => {
-          (r += '<tr>'),
-            e.forEach((e) => {
-              r += `<td>${e.trim()}</td>`;
-            }),
-            (r += '</tr>');
-        }),
-        (r += '</tbody></table>'),
-        r
-      );
-    }
-  ));
-}
-async function handleSendMessage(e) {
-  if (e && e.trim())
-    try {
-      const t = currentQuestions[currentQuestionIndex];
-      if (!t) throw new Error('No current question found');
-      const n = {
-        sessionId: currentSessionId,
-        chatInput: e,
-        context: {
-          chapter: {
-            id: currentChapterId,
-            name: allChapters[currentChapterIndex]?.name || 'Unknown',
-          },
-          question: {
-            index: currentQuestionIndex,
-            total: currentQuestions.length,
-            statement: t.statement,
-            questions: t.questions,
-            marks: t.marks,
-          },
-          timestamp: new Date().toISOString(),
-        },
-      };
-      if (!isValidWebhookUrl(QUESTIONS_WEBHOOK_URL))
-        throw new Error('Invalid webhook URL');
-      const s = await fetch(QUESTIONS_WEBHOOK_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify(n),
-        signal: AbortSignal.timeout(3e4),
+  );
+
+  // Handle lists
+  text = text.replace(/^\s*[-*]\s+(.+)$/gm, '<li>$1</li>');
+  text = text.replace(/(<li>.*<\/li>)/g, '<ul>$1</ul>');
+
+  // Handle line breaks
+  text = text.replace(/\n/g, '<br>');
+
+  // Handle tables
+  const tableRegex = /\|([^\n]+)\|\n\|([^\n]+)\|\n((?:\|[^\n]+\|\n?)+)/g;
+  text = text.replace(tableRegex, (match, header, separator, rows) => {
+    const headers = header.split('|').filter((h) => h.trim());
+    const cells = rows
+      .split('\n')
+      .map((row) => row.split('|').filter((cell) => cell.trim()));
+
+    let tableHtml = '<table class="markdown-table"><thead><tr>';
+    headers.forEach((h) => {
+      tableHtml += `<th>${h.trim()}</th>`;
+    });
+    tableHtml += '</tr></thead><tbody>';
+
+    cells.forEach((row) => {
+      tableHtml += '<tr>';
+      row.forEach((cell) => {
+        tableHtml += `<td>${cell.trim()}</td>`;
       });
-      if (!s.ok) throw new Error(`Server responded with status ${s.status}`);
-      let a;
+      tableHtml += '</tr>';
+    });
+
+    tableHtml += '</tbody></table>';
+    return tableHtml;
+  });
+
+  return text;
+}
+
+// Handle sending messages to webhook
+async function handleSendMessage(message) {
+  if (!message || !message.trim()) {
+    console.error('Empty message');
+    return;
+  }
+
+  try {
+    // Get current question data
+    const currentQuestion = currentQuestions[currentQuestionIndex];
+    if (!currentQuestion) {
+      throw new Error('No current question found');
+    }
+
+    // Format the payload
+    const payload = {
+      sessionId: currentSessionId,
+      chatInput: message,
+      context: {
+        chapter: {
+          id: currentChapterId,
+          name: allChapters[currentChapterIndex]?.name || 'Unknown',
+        },
+        question: {
+          index: currentQuestionIndex,
+          total: currentQuestions.length,
+          statement: currentQuestion.statement,
+          questions: currentQuestion.questions,
+          marks: currentQuestion.marks,
+        },
+        timestamp: new Date().toISOString(),
+      },
+    };
+
+    // Validate webhook URL
+    if (!isValidWebhookUrl(QUESTIONS_WEBHOOK_URL)) {
+      throw new Error('Invalid webhook URL');
+    }
+
+    // Send request to webhook
+    const response = await fetch(QUESTIONS_WEBHOOK_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Server responded with status ${response.status}`);
+    }
+
+    // Handle response
+    let responseData;
+    try {
+      const responseText = await response.text();
+      console.log('Raw response:', responseText); // Debug log
+
       try {
-        const e = await s.text();
-        try {
-          a = JSON.parse(e);
-        } catch (t) {
-          a = { message: e };
-        }
-        'string' == typeof a && (a = { message: a });
-        const t = (e) =>
-          e
-            ? e
-                .toString()
-                .replace(/^output:\s*/i, '')
-                .replace(/^output\s*:/i, '')
-                .replace(/^output/i, '')
-                .trim()
-            : '';
-        a.message && (a.message = t(a.message)),
-          a.response && (a.response = t(a.response)),
-          a.text && (a.text = t(a.text)),
-          a.output && (a.output = t(a.output)),
-          'string' == typeof a && (a = t(a));
+        responseData = JSON.parse(responseText);
       } catch (e) {
-        a = { message: 'Error processing response' };
+        responseData = { message: responseText };
       }
+
+      // Debug log the parsed data
+      console.log('Parsed response data:', responseData);
+
+      // Handle different response structures
+      if (typeof responseData === 'string') {
+        responseData = { message: responseData };
+      }
+
+      // Clean the response data
+      const cleanResponse = (text) => {
+        if (!text) return '';
+        return text
+          .toString()
+          .replace(/^output:\s*/i, '')
+          .replace(/^output\s*:/i, '')
+          .replace(/^output/i, '')
+          .trim();
+      };
+
+      // Clean all possible response fields
+      if (responseData.message)
+        responseData.message = cleanResponse(responseData.message);
+      if (responseData.response)
+        responseData.response = cleanResponse(responseData.response);
+      if (responseData.text)
+        responseData.text = cleanResponse(responseData.text);
+      if (responseData.output)
+        responseData.output = cleanResponse(responseData.output);
+
+      // If the response is a string, clean it
+      if (typeof responseData === 'string') {
+        responseData = cleanResponse(responseData);
+      }
+
+      // Debug log the cleaned data
+      console.log('Cleaned response data:', responseData);
+    } catch (error) {
+      console.error('Error processing response:', error);
+      responseData = { message: 'Error processing response' };
+    }
+
+    // Display bot response
+    const botResponse =
+      responseData.message ||
+      responseData.response ||
+      responseData.text ||
+      responseData.output ||
+      JSON.stringify(responseData);
+    addMessageToChat(botResponse, 'bot');
+  } catch (error) {
+    console.error('Error in handleSendMessage:', error);
+    addMessageToChat(
+      'Sorry, there was an error processing your message. Please try again.',
+      'system'
+    );
+  }
+}
+
+// Initialize chat functionality
+export function initializeChat() {
+  const messageInput = document.getElementById('message-input');
+  const sendButton = document.getElementById('send-button');
+  const chatContainer = document.getElementById('chat-container');
+
+  if (!messageInput || !sendButton || !chatContainer) {
+    console.error('Chat elements not found');
+    return;
+  }
+
+  // Clear any existing messages
+  chatContainer.innerHTML = '';
+
+  // Show initial welcome message
+  const welcomeMessage = `
+        <div class="welcome-message">
+            <p>Lets start with questions</p>
+            <p>You can:</p>
+            <ul>
+                <li>Ask questions about the current topic</li>
+                <li>Get explanations for answers</li>
+                <li>Request additional examples</li>
+                <li>Ask for clarification on any concept</li>
+            </ul>
+        </div>
+    `;
+  chatContainer.innerHTML = welcomeMessage;
+
+  // Handle send button click
+  sendButton.addEventListener('click', async () => {
+    const message = messageInput.value.trim();
+    if (!message) return;
+
+    // Disable input while processing
+    messageInput.disabled = true;
+    sendButton.disabled = true;
+
+    // Add user message
+    addMessageToChat(message, 'user');
+
+    // Clear input
+    messageInput.value = '';
+
+    // Show typing indicator
+    const typingIndicator = document.createElement('div');
+    typingIndicator.className = 'chat-message bot-message typing-indicator';
+    typingIndicator.textContent = '...';
+    chatContainer.appendChild(typingIndicator);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+
+    try {
+      // Send message to webhook
+      await handleSendMessage(message);
+    } catch (error) {
+      console.error('Error in chat:', error);
       addMessageToChat(
-        a.message || a.response || a.text || a.output || JSON.stringify(a),
+        '⚠️ Sorry, I encountered an error. Please try again later.',
         'bot'
       );
-    } catch (e) {
-      addMessageToChat(
-        'Sorry, there was an error processing your message. Please try again.',
-        'system'
-      );
+    } finally {
+      // Remove typing indicator
+      typingIndicator.remove();
+
+      // Re-enable input
+      messageInput.disabled = false;
+      sendButton.disabled = false;
+      messageInput.focus();
     }
-}
-export function initializeChat() {
-  const e = document.getElementById('message-input'),
-    t = document.getElementById('send-button'),
-    n = document.getElementById('chat-container');
-  if (!e || !t || !n) return;
-  n.innerHTML = '';
-  (n.innerHTML =
-    '\n        <div class="welcome-message">\n            <p>Lets start with questions</p>\n            <p>You can:</p>\n            <ul>\n                <li>Ask questions about the current topic</li>\n                <li>Get explanations for answers</li>\n                <li>Request additional examples</li>\n                <li>Ask for clarification on any concept</li>\n            </ul>\n        </div>\n    '),
-    t.addEventListener('click', async () => {
-      const s = e.value.trim();
-      if (!s) return;
-      (e.disabled = !0),
-        (t.disabled = !0),
-        addMessageToChat(s, 'user'),
-        (e.value = '');
-      const a = document.createElement('div');
-      (a.className = 'chat-message bot-message typing-indicator'),
-        (a.textContent = '...'),
-        n.appendChild(a),
-        (n.scrollTop = n.scrollHeight);
-      try {
-        await handleSendMessage(s);
-      } catch (e) {
+  });
+
+  // Handle Enter key
+  messageInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendButton.click();
+    }
+  });
+
+  // Test webhook connection on initialization
+  testWebhook()
+    .then((success) => {
+      if (success) {
+        // Webhook is connected, no need to show additional message
+        console.log('Webhook connection successful');
+      } else {
         addMessageToChat(
-          '⚠️ Sorry, I encountered an error. Please try again later.',
+          '⚠️ Connection error. Some features may not be available.',
           'bot'
         );
-      } finally {
-        a.remove(), (e.disabled = !1), (t.disabled = !1), e.focus();
+        console.error('Webhook connection test failed');
       }
-    }),
-    e.addEventListener('keypress', (e) => {
-      'Enter' !== e.key || e.shiftKey || (e.preventDefault(), t.click());
-    }),
-    testWebhook()
-      .then((e) => {
-        e ||
-          addMessageToChat(
-            '⚠️ Connection error. Some features may not be available.',
-            'bot'
-          );
-      })
-      .catch((e) => {
-        addMessageToChat(
-          '⚠️ Unable to connect to the chat service. Please try again later.',
-          'bot'
-        );
-      });
+    })
+    .catch((error) => {
+      console.error('Error testing webhook connection:', error);
+      addMessageToChat(
+        '⚠️ Unable to connect to the chat service. Please try again later.',
+        'bot'
+      );
+    });
 }
+
+// Export functions
 export {
   loadChapters,
   loadRelatedTopics,

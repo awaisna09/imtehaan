@@ -1,58 +1,99 @@
-function createChapterCard(e) {
-  const t = document.createElement('a');
-  return (
-    (t.href = `topics.html?chapter=${encodeURIComponent(e.name)}`),
-    (t.className = 'chapter-card'),
-    t.setAttribute('role', 'listitem'),
-    t.setAttribute('aria-label', `${e.name} chapter`),
-    (t.innerHTML = `\n        <div class="chapter-content">\n            <div class="chapter-header">\n                <h3 class="chapter-title">${e.name}</h3>\n            </div>\n            <p class="chapter-subtitle">${e.description}</p>\n        </div>\n    `),
-    t
-  );
+// Function to create a chapter card element
+function createChapterCard(chapter) {
+  const card = document.createElement('a');
+  card.href = `topics.html?chapter=${encodeURIComponent(chapter.name)}`;
+  card.className = 'chapter-card';
+  card.setAttribute('role', 'listitem');
+  card.setAttribute('aria-label', `${chapter.name} chapter`);
+
+  card.innerHTML = `
+        <div class="chapter-content">
+            <div class="chapter-header">
+                <h3 class="chapter-title">${chapter.name}</h3>
+            </div>
+            <p class="chapter-subtitle">${chapter.description}</p>
+        </div>
+    `;
+
+  return card;
 }
+
+// Function to fetch and update overall course progress
 async function updateCourseProgress() {
-  document.getElementById('progressContainer');
-  const e = document.getElementById('progressBar'),
-    t = document.getElementById('progressText'),
-    n = document.getElementById('progressSpinner'),
-    r = document.getElementById('progressError');
+  const progressContainer = document.getElementById('progressContainer');
+  const progressBar = document.getElementById('progressBar');
+  const progressText = document.getElementById('progressText');
+  const progressSpinner = document.getElementById('progressSpinner');
+  const progressError = document.getElementById('progressError');
+
   try {
-    (n.style.display = 'block'), (a.style.display = 'none');
-    const { data: r, error: a } = await supabase
+    progressSpinner.style.display = 'block';
+    progressError.style.display = 'none';
+
+    // Fetch progress from your database
+    const { data: progressData, error: progressError } = await supabase
       .from('user_progress')
       .select('overall_progress')
       .single();
-    if (a) throw a;
-    const s = r?.overall_progress || 0;
-    (e.style.width = `${s}%`), (t.textContent = `${s}% Complete`);
-  } catch (e) {
-    r.style.display = 'block';
+
+    if (progressError) throw progressError;
+
+    const progress = progressData?.overall_progress || 0;
+    progressBar.style.width = `${progress}%`;
+    progressText.textContent = `${progress}% Complete`;
+  } catch (error) {
+    console.error('Error fetching progress:', error);
+    progressError.style.display = 'block';
   } finally {
-    n.style.display = 'none';
+    progressSpinner.style.display = 'none';
   }
 }
+
+// Function to fetch and display chapters
 async function loadChapters() {
-  const e = document.getElementById('chaptersLoadingSpinner'),
-    t = document.getElementById('chaptersError'),
-    n = document.getElementById('chaptersList');
+  const chaptersSpinner = document.getElementById('chaptersLoadingSpinner');
+  const chaptersError = document.getElementById('chaptersError');
+  const chaptersList = document.getElementById('chaptersList');
+
   try {
-    (e.style.display = 'block'), (t.style.display = 'none'), (n.innerHTML = '');
-    const { data: r, error: a } = await supabase
+    chaptersSpinner.style.display = 'block';
+    chaptersError.style.display = 'none';
+    chaptersList.innerHTML = ''; // Clear existing chapters
+
+    // Fetch distinct chapter names from final_topics table
+    const { data: chapters, error } = await supabase
       .from('final_topics')
       .select('name')
       .order('name');
-    if (a) throw a;
-    if (!r || 0 === r.length) throw new Error('No chapters found');
-    [...new Set(r.map((e) => e.name))].forEach((e) => {
-      const t = createChapterCard({ name: e, description: 'Chapter content' });
-      n.appendChild(t);
+
+    if (error) throw error;
+
+    if (!chapters || chapters.length === 0) {
+      throw new Error('No chapters found');
+    }
+
+    // Get unique chapter names
+    const uniqueChapters = [...new Set(chapters.map((topic) => topic.name))];
+
+    // Render each unique chapter
+    uniqueChapters.forEach((chapterName) => {
+      const chapterCard = createChapterCard({
+        name: chapterName,
+        description: 'Chapter content', // Since we don't have descriptions in final_topics
+      });
+      chaptersList.appendChild(chapterCard);
     });
-  } catch (e) {
-    (t.style.display = 'block'),
-      (t.textContent = e.message || 'Failed to load chapters');
+  } catch (error) {
+    console.error('Error loading chapters:', error);
+    chaptersError.style.display = 'block';
+    chaptersError.textContent = error.message || 'Failed to load chapters';
   } finally {
-    e.style.display = 'none';
+    chaptersSpinner.style.display = 'none';
   }
 }
+
+// Initialize page
 document.addEventListener('DOMContentLoaded', () => {
-  updateCourseProgress(), loadChapters();
+  updateCourseProgress();
+  loadChapters();
 });
