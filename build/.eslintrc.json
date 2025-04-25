@@ -1,0 +1,28 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "node": true
+  },
+  "extends": "eslint:recommended",
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module"
+  },
+  "globals": {
+    "Chart": "readonly",
+    "marked": "readonly",
+    "supabase": "readonly",
+    "topicName": "writable",
+    "updateProgressBars": "writable"
+  },
+  "rules": {
+    "no-console": "off",
+    "no-unused-vars": "warn",
+    "no-func-assign": "warn",
+    "no-fallthrough": "warn",
+    "no-cond-assign": "warn",
+    "no-empty": "warn",
+    "no-undef": "error"
+  }
+}
