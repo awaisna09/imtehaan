@@ -185,7 +185,9 @@
           entries.forEach((entry) => {
             if (entry.isIntersecting) {
               entry.target.currentTime = 0; // Reset video to start
-              entry.target.play();
+              entry.target.play().catch(error => {
+                console.log('Playback was interrupted:', error);
+              });
             } else {
               entry.target.pause();
             }
