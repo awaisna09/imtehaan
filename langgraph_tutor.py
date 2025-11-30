@@ -245,8 +245,9 @@ def safe_node(fn):
     return wrapper
 
 
-# Load environment variables from config.env
-load_dotenv('config.env')
+# Load environment variables from config.env (if exists) or use system env vars
+# On Railway, environment variables are set directly, so config.env is optional
+load_dotenv('config.env', override=False)  # Don't override existing env vars
 
 # Initialize Supabase client if available
 supabase_client = None
@@ -280,7 +281,19 @@ except Exception as e:
     logger.error(f"[ERROR] Error initializing Supabase client: {e}")
 
 # Initialize AITutorAgent to build all services
+# Validate API key before initializing
 api_key = os.getenv("OPENAI_API_KEY")
+if not api_key:
+    error_msg = (
+        "[ERROR] OPENAI_API_KEY environment variable is not set! "
+        "Please set it in Railway environment variables."
+    )
+    logger.error(error_msg)
+    raise ValueError(error_msg)
+
+if DEBUG_MODE:
+    logger.info(f"[OK] OpenAI API key found (length: {len(api_key)})")
+
 agent = AITutorAgent(
     api_key=api_key,
     supabase_client=supabase_client

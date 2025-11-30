@@ -43,6 +43,11 @@ class ConceptAgent:
             supabase_client: Supabase client instance
         """
         self.api_key = api_key or os.getenv('OPENAI_API_KEY')
+        if not self.api_key:
+            raise ValueError(
+                "OPENAI_API_KEY must be provided either as parameter "
+                "or as environment variable"
+            )
         self._embed_client = OpenAI(api_key=self.api_key)
         self.supabase = supabase_client
 

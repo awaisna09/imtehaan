@@ -15,8 +15,9 @@ from pydantic import BaseModel
 import uvicorn
 from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv('config.env')
+# Load environment variables from config.env (if exists) or use system env vars
+# On Railway, environment variables are set directly, so config.env is optional
+load_dotenv('config.env', override=False)  # Don't override existing env vars
 
 # Optional LangChain support
 try:
