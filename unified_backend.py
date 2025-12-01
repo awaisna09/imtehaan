@@ -149,8 +149,20 @@ if (
 # Validate required configuration
 if not OPENAI_API_KEY:
     print("[ERROR] CRITICAL ERROR: OPENAI_API_KEY not found")
-    print("   Please check config.env and ensure OPENAI_API_KEY is set")
+    print("   Please check Railway environment variables and ensure OPENAI_API_KEY is set")
+    print("   Go to Railway Dashboard → Your Project → Variables → Add OPENAI_API_KEY")
     exit(1)
+
+# Validate API key format (basic check)
+if OPENAI_API_KEY and not (OPENAI_API_KEY.startswith('sk-') or OPENAI_API_KEY.startswith('sk-proj-')):
+    print("[WARNING] OPENAI_API_KEY doesn't start with 'sk-' or 'sk-proj-'")
+    print("   Please verify the key is correct in Railway environment variables")
+    print("   Get your key from: https://platform.openai.com/api-keys")
+
+# Log key status (masked for security)
+if OPENAI_API_KEY:
+    key_preview = OPENAI_API_KEY[:20] + "..." + OPENAI_API_KEY[-10:] if len(OPENAI_API_KEY) > 30 else "***"
+    print(f"[OK] OpenAI API key found: {key_preview} (length: {len(OPENAI_API_KEY)})")
 
 # Set LangSmith environment variables if available
 if LANGSMITH_API_KEY:
