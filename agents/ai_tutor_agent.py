@@ -40,8 +40,8 @@ try:
 except ImportError:
     LANGCHAIN_AVAILABLE = False
 
-# Load environment variables
-load_dotenv('config.env')
+# Load environment variables (don't override Railway's env vars)
+load_dotenv('config.env', override=False)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
